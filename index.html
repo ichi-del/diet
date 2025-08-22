@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>رژیم غذایی</title>
+    <title>ماشین حساب نهایی رژیم غذایی (۹۴ کیلوگرم)</title>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Vazirmatn', sans-serif;
             line-height: 1.8;
             color: #1F2937;
-            background-color: #F9FAFB;
+            background-color: #f3f4f6;
             margin: 0;
             padding: 20px;
             direction: rtl;
@@ -22,80 +22,45 @@
         h1, h2, h3, h4 {
             font-weight: 700;
         }
-        h1 {
-            font-size: 28px;
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        h2 {
-            font-size: 22px;
-            margin-top: 40px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #E5E7EB;
-            padding-bottom: 10px;
-        }
-        h3 {
-            font-size: 18px;
-            margin-bottom: 15px;
-        }
-        h4 {
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
-        .printable-section {
-            page-break-inside: avoid; /* This is the key for printing */
+        h1 { font-size: 28px; text-align: center; margin-bottom: 30px; color: #111827; }
+        h2 { font-size: 22px; margin-top: 40px; margin-bottom: 20px; border-bottom: 2px solid #E5E7EB; padding-bottom: 10px; }
+        h4 { font-size: 16px; margin-bottom: 10px; display: flex; align-items: center; flex-wrap: wrap; }
+        .printable-section, .interactive-section {
+            page-break-inside: avoid;
             margin-bottom: 25px;
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 12px;
             background-color: #FFFFFF;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.05);
+            transition: all 0.3s ease-in-out;
         }
-        ul {
-            list-style-type: none;
-            padding-right: 0;
-            margin: 0;
-        }
-        li {
-            margin-bottom: 8px;
-            color: #4B5563;
-        }
-        .meal-total {
-            font-weight: 600;
-            margin-top: 15px;
-            border-top: 1px solid #F3F4F6;
-            padding-top: 15px;
+        .interactive-section { background-color: #eef7ff; border: 1px solid #d1e7fd; }
+        ul { list-style-type: none; padding-right: 0; margin: 0; }
+        li { margin-bottom: 8px; color: #4B5563; font-size: 14px; }
+        .meal-total { font-weight: 600; margin-top: 15px; border-top: 1px solid #F3F4F6; padding-top: 15px; font-size: 16px; text-align: left; }
+        .input-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; align-items: end; }
+        .input-group label { display: block; font-weight: 600; margin-bottom: 5px; }
+        .input-group input, .input-group button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #DDD;
+            box-sizing: border-box;
+            font-family: 'Vazirmatn', sans-serif;
             font-size: 16px;
         }
-        .overview-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        .overview-item {
-            padding: 15px;
-            background-color: #F9FAFB;
-            border-radius: 6px;
-        }
-        .overview-item strong {
-            color: #111827;
-        }
+        .input-group button { background-color: #0d6efd; color: white; cursor: pointer; border: none; transition: background-color 0.2s; }
+        .input-group button:hover { background-color: #0b5ed7; }
+        .info-value { font-weight: 700; color: #0d6efd; }
+        .keto-meal { background-color: #f0fdf4; border-left: 4px solid #22c55e; }
+        .keto-tag { background-color: #22c55e; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 10px; }
+        .meal-macros-summary { font-size: 12px; color: #6B7280; margin-right: 10px; }
 
         @media print {
-            body {
-                font-size: 10pt;
-                background-color: #FFFFFF;
-                padding: 0;
-                margin: 20px;
-            }
-            .printable-section {
-                box-shadow: none;
-                border: 1px solid #DDD;
-                margin-bottom: 20px;
-            }
-            h1 { font-size: 22pt; }
-            h2 { font-size: 18pt; }
-            h3 { font-size: 14pt; }
-            h4 { font-size: 12pt; }
+            body { font-size: 10pt; background-color: #FFFFFF; padding: 0; margin: 20px; }
+            .printable-section, .interactive-section { box-shadow: none; border: 1px solid #DDD; }
+            h1 { font-size: 22pt; } h2 { font-size: 18pt; } h4 { font-size: 12pt; }
+            .interactive-section { display: none; }
         }
     </style>
 </head>
@@ -103,229 +68,262 @@
 
 <div class="container">
 
-    <h1>🥗 رژیم غذایی بازبینی شده برای ۹۸ کیلوگرم</h1>
+    <h1>🥗 ماشین حساب تعاملی رژیم غذایی</h1>
 
-    <div class="printable-section">
-        <h2>📊 وضعیت سلامتی شما (در ۹۸ کیلوگرم)</h2>
-        <ul>
-            <li>⚖️ <strong>وزن فعلی:</strong> ۹۸ کیلوگرم</li>
-            <li>🎯 <strong>شاخص توده بدنی (BMI):</strong> ۳۲.۰</li>
-            <li>🔥 <strong>متابولیسم پایه (BMR):</strong> ~۱,۹۴۰ کیلوکالری/روز</li>
-            <li>🏃‍♂️ <strong>کالری مورد نیاز روزانه (TDEE):</strong> ~۲,۶۶۸ کیلوکالری/روز (با پیاده‌روی)</li>
-            <li>📉 <strong>هدف کاهش وزن هفتگی:</strong> ۱.۰۵ کیلوگرم</li>
-            <li>🎯 <strong>کالری دریافتی هدف روزانه:</strong> <strong>~۱,۵۱۵ کیلوکالری</strong></li>
-        </ul>
-    </div>
-    
-    <div class="printable-section">
-        <h2>📈 تخمین کاهش وزن هفتگی</h2>
-        <ul>
-            <li><strong>کالری مورد نیاز روزانه (TDEE):</strong> <strong>۲,۶۶۸ کیلوکالری</strong> (کالری که بدن شما می‌سوزاند)</li>
-            <li><strong>میانگین کالری دریافتی رژیم:</strong> <strong>- ۱,۵۱۵ کیلوکالری</strong> (کالری که شما مصرف می‌کنید)</li>
-            <li><strong>کسری کالری روزانه:</strong> <strong>= ۱,۱۵۳ کیلوکالری</strong></li>
-            <li><strong>کاهش وزن تخمینی هفتگی:</strong> <strong>~۱.۰۵ کیلوگرم</strong></li>
-        </ul>
-    </div>
-
-    <h2>🌅 وعده ۱: گزینه‌های صبحانه (تعدیل شده)</h2>
-
-    <div class="printable-section">
-        <h4>گزینه ۱ (~۵۸۹ کیلوکالری): املت گوجه فرنگی با پنیر خامه‌ای و نان سنگک</h4>
-        <ul>
-            <li>🍳 ۲ عدد تخم مرغ بزرگ (۱۰۰ گرم): ۱۵۵ کیلوکالری | ۱۳ گرم پروتئین | ۱۱ گرم چربی | ۱.۱ گرم کربوهیدرات</li>
-            <li>🧀 پنیر خامه‌ای (۴۰ گرم): ۱۳۷ کیلوکالری | ۲.۴ گرم پروتئین | ۱۳.۸ گرم چربی | ۱.۶ گرم کربوهیدرات</li>
-            <li>🍅 ۱ عدد گوجه فرنگی متوسط (۱۲۰ گرم): ۲۲ کیلوکالری | ۱.۱ گرم پروتئین | ۰.۲ گرم چربی | ۴.۷ گرم کربوهیدرات | ۱.۴ گرم فیبر</li>
-            <li>🧈 کره (۱ قاشق غذاخوری / ۱۴ گرم): ۱۰۰ کیلوکالری | ۰.۱ گرم پروتئین | ۱۱.۴ گرم چربی</li>
-            <li>🍞 نان سنگک (۷۰ گرم): ۱۷۵ کیلوکالری | ۷ گرم پروتئین | ۱.۳ گرم چربی | ۳۶ گرم کربوهیدرات | ۵.۲ گرم فیبر</li>
-        </ul>
-        <div class="meal-total">📈 مجموع: ~۵۸۹ کیلوکالری | ~۲۳.۶ گرم پروتئین | ~۳۷.۷ گرم چربی | ~۴۳.۴ گرم کربوهیدرات | ~۶.۶ گرم فیبر</div>
+    <div class="interactive-section">
+        <h2>تنظیمات شخصی شما</h2>
+        <div class="input-group">
+            <div>
+                <label for="currentWeight">⚖️ وزن فعلی (کیلوگرم)</label>
+                <input type="number" id="currentWeight" value="94">
+            </div>
+            <div>
+                <label for="targetWeeklyLoss">📉 کاهش وزن هفتگی هدف (کیلوگرم)</label>
+                <input type="number" id="targetWeeklyLoss" value="1.5" step="0.1">
+            </div>
+            <div>
+                <button id="calculateBtn">محاسبه مجدد برنامه</button>
+            </div>
+        </div>
     </div>
 
     <div class="printable-section">
-        <h4>گزینه ۲ (~۵۲۸ کیلوکالری): عدسی با کره و نان بربری</h4>
+        <h2>📊 وضعیت سلامتی شما</h2>
         <ul>
-            <li>🥣 عدس پخته (۱۵۰ گرم): ۱۷۴ کیلوکالری | ۱۳.۵ گرم پروتئین | ۰.۶ گرم چربی | ۳۰ گرم کربوهیدرات | ۱۲ گرم فیبر</li>
-            <li>🧈 کره (۱۰ گرم): ۷۲ کیلوکالری | ۰.۱ گرم پروتئین | ۸.۱ گرم چربی</li>
-            <li>🍞 نان بربری (۷۰ گرم): ۱۹۲ کیلوکالری | ۶.۱ گرم پروتئین | ۰.۹ گرم چربی | ۳۹.۴ گرم کربوهیدرات | ۱.۷ گرم فیبر</li>
-            <li>🧀 پنیر خامه‌ای (۲۶ گرم): ۹۰ کیلوکالری | ۱.۲ گرم پروتئین | ۹ گرم چربی | ۰.۸ گرم کربوهیدرات</li>
+            <li>⚖️ <strong>وزن فعلی:</strong> <span id="displayWeight" class="info-value"></span> کیلوگرم</li>
+            <li>🎯 <strong>شاخص توده بدنی (BMI):</strong> <span id="displayBMI" class="info-value"></span></li>
+            <li>🔥 <strong>متابولیسم پایه (BMR):</strong> <span id="displayBMR" class="info-value"></span> کیلوکالری/روز</li>
+            <li>🏃‍♂️ <strong>کالری مورد نیاز روزانه (TDEE):</strong> <span id="displayTDEE" class="info-value"></span> کیلوکالری/روز</li>
+            <li>📉 <strong>هدف کاهش وزن هفتگی:</strong> <span id="displayTargetLoss" class="info-value"></span> کیلوگرم</li>
+            <li>🎯 <strong>کالری دریافتی هدف روزانه:</strong> <span id="displayTargetCalories" class="info-value"></span> <strong>کیلوکالری</strong></li>
         </ul>
-        <div class="meal-total">📈 مجموع: ~۵۲۸ کیلوکالری | ~۲۰.۹ گرم پروتئین | ~۱۸.۶ گرم چربی | ~۷۰.۲ گرم کربوهیدرات | ~۱۳.۷ گرم فیبر</div>
-    </div>
-    
-    <div class="printable-section">
-        <h4>گزینه ۳ (~۵۳۱ کیلوکالری): میرزا قاسمی با نان تافتون و ماست</h4>
-        <ul>
-            <li>🍆 بادمجان کبابی (۱۰۰ گرم): ۳۵ کیلوکالری | ۱ گرم پروتئین | ۰.۲ گرم چربی | ۸ گرم کربوهیدرات | ۳ گرم فیبر</li>
-            <li>🍳 ۱ عدد تخم مرغ بزرگ (۵۰ گرم): ۷۸ کیلوکالری | ۶.۵ گرم پروتئین | ۵.۵ گرم چربی | ۰.۶ گرم کربوهیدرات</li>
-            <li>🍅 ۱ عدد گوجه فرنگی متوسط (۱۲۰ گرم): ۲۲ کیلوکالری | ۱.۱ گرم پروتئین | ۰.۲ گرم چربی | ۴.۷ گرم کربوهیدرات | ۱.۴ گرم فیبر</li>
-            <li>🧈 کره (۱ قاشق غذاخوری / ۱۴ گرم): ۱۰۰ کیلوکالری | ۰.۱ گرم پروتئین | ۱۱.۴ گرم چربی</li>
-            <li>🍞 نان تافتون (۷۰ گرم): ۲۰۱ کیلوکالری | ۶.۱ گرم پروتئین | ۱.۷ گرم چربی | ۴۰.۲ گرم کربوهیدرات | ۲.۲ گرم فیبر</li>
-            <li>🥛 ماست پرچرب (۱۰۰ گرم): ۹۵ کیلوکالری | ۹ گرم پروتئین | ۵ گرم چربی | ۳ گرم کربوهیدرات</li>
-        </ul>
-        <div class="meal-total">📈 مجموع: ~۵۳۱ کیلوکالری | ~۲۳.۸ گرم پروتئین | ~۲۴ گرم چربی | ~۵۶.۵ گرم کربوهیدرات | ~۶.۶ گرم فیبر</div>
     </div>
 
-    <div class="printable-section">
-        <h4>گزینه ۴ (~۴۴۰ کیلوکالری): پنیر خامه‌ای و کره بادام زمینی با نان بربری</h4>
-        <ul>
-            <li>🧀 پنیر خامه‌ای (۴۵ گرم): ۱۵۴ کیلوکالری | ۲.۷ گرم پروتئین | ۱۵.۵ گرم چربی | ۱.۸ گرم کربوهیدرات</li>
-            <li>🥜 کره بادام زمینی (۱ قاشق غذاخوری / ۱۶ گرم): ۹۴ کیلوکالری | ۴ گرم پروتئین | ۸ گرم چربی | ۳ گرم کربوهیدرات | ۱ گرم فیبر</li>
-            <li>🍞 نان بربری (۷۰ گرم): ۱۹۲ کیلوکالری | ۶.۱ گرم پروتئین | ۰.۹ گرم چربی | ۳۹.۴ گرم کربوهیدرات | ۱.۷ گرم فیبر</li>
-        </ul>
-        <div class="meal-total">📈 مجموع: ~۴۴۰ کیلوکالری | ~۱۲.۸ گرم پروتئین | ~۲۴.۴ گرم چربی | ~۴۴.۲ گرم کربوهیدرات | ~۲.۷ گرم فیبر</div>
-    </div>
+    <h2>🌅 وعده ۱: گزینه‌های صبحانه (۲۰ گزینه)</h2>
+    <div id="breakfast-options"></div>
 
-    <div class="printable-section">
-        <h4>گزینه ۵ (~۵۲۱ کیلوکالری): پنیر خامه‌ای، گردو و خیار با نان لواش</h4>
-        <ul>
-            <li>🧀 پنیر خامه‌ای (۴۰ گرم): ۱۳۷ کیلوکالری | ۲.۴ گرم پروتئین | ۱۳.۸ گرم چربی | ۱.۶ گرم کربوهیدرات</li>
-            <li>🌰 گردو (۱۰ گرم): ۶۵ کیلوکالری | ۱.۵ گرم پروتئین | ۶.۵ گرم چربی | ۱.۴ گرم کربوهیدرات | ۰.۷ گرم فیبر</li>
-            <li>🍞 نان لواش (۷۰ گرم): ۱۹۶ کیلوکالری | ۶.۱ گرم پروتئین | ۱.۴ گرم چربی | ۴۰.۲ گرم کربوهیدرات | ۲.۱ گرم فیبر</li>
-            <li>� ۱ عدد خیار متوسط (۱۵۰ گرم): ۲۳ کیلوکالری | ۱ گرم پروتئین | ۰.۲ گرم چربی | ۵.۴ گرم کربوهیدرات | ۰.۸ گرم فیبر</li>
-            <li>🧈 کره (۱ قاشق غذاخوری / ۱۴ گرم): ۱۰۰ کیلوکالری | ۰.۱ گرم پروتئین | ۱۱.۴ گرم چربی</li>
-        </ul>
-        <div class="meal-total">📈 مجموع: ~۵۲۱ کیلوکالری | ~۱۱.۱ گرم پروتئین | ~۳۳.۳ گرم چربی | ~۴۸.۶ گرم کربوهیدرات | ~۳.۶ گرم فیبر</div>
-    </div>
+    <h2>🍎 میان‌وعده (ثابت)</h2>
+    <div class="printable-section"><h4>گزینه ۱ (~۴۹۲ کیلوکالری | پ: ۱۲گ | چ: ۲۲.۹گ | ک: ۶۶گ | ف: ۱۹.۳گ)</h4><ul><li>🍏 ۲ واحد میوه: ~۲۰۰ کیلوکالری | پ: ۲گ | چ: ۰.۵گ | ک: ۵۰گ | ف: ۷.۵گ</li><li>🥜 ۲ واحد آجیل: ~۱۷۵ کیلوکالری | پ: ۶گ | چ: ۱۵گ | ک: ۶گ | ف: ۳.۵گ</li><li>🌱 دانه چیا (۲ قاشق): ۱۱۷ کیلوکالری | پ: ۴گ | چ: ۷.۴گ | ک: ۱۰گ | ف: ۸.۳گ</li></ul></div>
 
-    <h2>🍎 میان‌وعده (بدون تغییر)</h2>
-
-    <div class="printable-section">
-        <h4>گزینه ۱ (~۴۹۲ کیلوکالری): میوه، آجیل و دانه‌ها</h4>
-        <ul>
-            <li>🍏 ۲ واحد میوه: ~۲۰۰ کیلوکالری | ~۲ گرم پروتئین | ~۰.۵ گرم چربی | ~۵۰ گرم کربوهیدرات | ~۷.۵ گرم فیبر</li>
-            <li>🥜 ۲ واحد آجیل: ~۱۷۵ کیلوکالری | ~۶ گرم پروتئین | ~۱۵ گرم چربی | ~۶ گرم کربوهیدرات | ~۳.۵ گرم فیبر</li>
-            <li>🌱 دانه چیا (۲ قاشق غذاخوری): ۱۱۷ کیلوکالری | ۴ گرم پروتئین | ۷.۴ گرم چربی | ۱۰ گرم کربوهیدرات | ۸.۳ گرم فیبر</li>
-        </ul>
-        <div class="meal-total">📈 مجموع: ~۴۹۲ کیلوکالری | ~۱۲ گرم پروتئین | ~۲۲.۹ گرم چربی | ~۶۶ گرم کربوهیدرات | ~۱۹.۳ گرم فیبر</div>
-    </div>
-
-    <h2>🍛 وعده ۲: گزینه‌های ناهار/شام (تعدیل شده و کامل)</h2>
-
-    <div class="printable-section">
-        <h4>گزینه ۱ (~۶۴۴ کیلوکالری): خوراک لوبیا چیتی با برنج و ماست</h4>
-        <ul>
-            <li>🫘 لوبیا چیتی پخته (۲۰۰ گرم): ۲۹۰ کیلوکالری | ۱۸ گرم پروتئین | ۱.۲ گرم چربی | ۵۴ گرم کربوهیدرات | ۱۸ گرم فیبر</li>
-            <li>🍚 برنج پخته (۸۰ گرم): ۱۰۴ کیلوکالری | ۲.۱ گرم پروتئین | ۰.۲ گرم چربی | ۲۲.۴ گرم کربوهیدرات | ۰.۳ گرم فیبر</li>
-            <li>🧈 کره (۱ قاشق غذاخوری / ۱۴ گرم): ۱۰۰ کیلوکالری | ۰.۱ گرم پروتئین | ۱۱.۴ گرم چربی</li>
-            <li>🥛 ماست (۱ لیوان): ۱۵۰ کیلوکالری | ۱۲ گرم پروتئین | ۸ گرم چربی | ۱۱ گرم کربوهیدرات</li>
-        </ul>
-        <div class="meal-total">📈 مجموع: ~۶۴۴ کیلوکالری | ~۳۲.۲ گرم پروتئین | ~۲۰.۸ گرم چربی | ~۸۷.۴ گرم کربوهیدرات | ~۱۸.۳ گرم فیبر</div>
-    </div>
-
-    <div class="printable-section">
-        <h4>گزینه ۲ (~۸۳۱ کیلوکالری): کشک بادمجان با نان سنگک</h4>
-        <ul>
-            <li>🍆 بادمجان کبابی (۲۰۰ گرم): ۷۰ کیلوکالری | ۲ گرم پروتئین | ۰.۴ گرم چربی | ۱۶ گرم کربوهیدرات | ۶ گرم فیبر</li>
-            <li>🥣 کشک (۵۰ گرم): ۵۵ کیلوکالری | ۸ گرم پروتئین | ۱ گرم چربی | ۴ گرم کربوهیدرات</li>
-            <li>🧈 کره (۱ قاشق غذاخوری / ۱۴ گرم): ۱۰۰ کیلوکالری | ۰.۱ گرم پروتئین | ۱۱.۴ گرم چربی</li>
-            <li>🌰 گردو (۲۰ گرم): ۱۳۱ کیلوکالری | ۳ گرم پروتئین | ۱۳ گرم چربی | ۲.۷ گرم کربوهیدرات | ۱.۳ گرم فیبر</li>
-            <li>🍞 نان سنگک (۱۳۰ گرم): ۳۲۵ کیلوکالری | ۱۳ گرم پروتئین | ۲.۱ گرم چربی | ۶۶.۶ گرم کربوهیدرات | ۹.۷ گرم فیبر</li>
-            <li>🥛 ماست (۱ لیوان): ۱۵۰ کیلوکالری | ۱۲ گرم پروتئین | ۸ گرم چربی | ۱۱ گرم کربوهیدرات</li>
-        </ul>
-        <div class="meal-total">📈 مجموع: ~۸۳۱ کیلوکالری | ~۳۸.۱ گرم پروتئین | ~۳۵.۹ گرم چربی | ~۱۰۰.۳ گرم کربوهیدرات | ~۱۷ گرم فیبر</div>
-    </div>
-    
-    <div class="printable-section">
-        <h4>گزینه ۳ (~۸۰۶ کیلوکالری): کوکو سبزی با پنیر خامه‌ای و برنج</h4>
-        <ul>
-            <li>🌿 کوکو سبزی (۱۵۰ گرم): ~۲۵۰ کیلوکالری | ۱۴ گرم پروتئین | ۱۸ گرم چربی | ۸ گرم کربوهیدرات | ۴ گرم فیبر</li>
-            <li>🧈 کره (۱ قاشق غذاخوری / ۱۴ گرم): ۱۰۰ کیلوکالری | ۰.۱ گرم پروتئین | ۱۱.۴ گرم چربی</li>
-            <li>🧀 پنیر خامه‌ای (۴۰ گرم): ۱۳۷ کیلوکالری | ۲.۴ گرم پروتئین | ۱۳.۸ گرم چربی | ۱.۶ گرم کربوهیدرات</li>
-            <li>🍚 برنج پخته (۱۳۰ گرم): ۱۶۹ کیلوکالری | ۳.۵ گرم پروتئین | ۰.۴ گرم چربی | ۳۶.۴ گرم کربوهیدرات | ۰.۵ گرم فیبر</li>
-            <li>🥛 ماست (۱ لیوان): ۱۵۰ کیلوکالری | ۱۲ گرم پروتئین | ۸ گرم چربی | ۱۱ گرم کربوهیدرات</li>
-        </ul>
-        <div class="meal-total">📈 مجموع: ~۸۰۶ کیلوکالری | ~۳۲ گرم پروتئین | ~۵۱.۶ گرم چربی | ~۵۷ گرم کربوهیدرات | ~۴.۵ گرم فیبر</div>
-    </div>
-
-    <div class="printable-section">
-        <h4>گزینه ۴ (~۵۶۵ کیلوکالری): ماکارونی با سویا</h4>
-        <ul>
-            <li>🍝 ماکارونی با سویا (۲۵۰ گرم): ~۳۴۰ کیلوکالری | ۱۶ گرم پروتئین | ۷.۵ گرم چربی | ۵۲ گرم کربوهیدرات | ۵.۷ گرم فیبر</li>
-            <li>🥗 سالاد: ~۷۵ کیلوکالری | ۲ گرم پروتئین | ۵ گرم چربی | ۶ گرم کربوهیدرات | ۳ گرم فیبر</li>
-            <li>🥛 ماست (۱ لیوان): ۱۵۰ کیلوکالری | ۱۲ گرم پروتئین | ۸ گرم چربی | ۱۱ گرم کربوهیدرات</li>
-        </ul>
-        <div class="meal-total">📈 مجموع: ~۵۶۵ کیلوکالری | ~۳۰ گرم پروتئین | ~۲۰.۵ گرم چربی | ~۶۹ گرم کربوهیدرات | ~۸.۷ گرم فیبر</div>
-    </div>
-
-    <div class="printable-section">
-        <h4>گزینه ۵ (~۵۶۴ کیلوکالری): عدس پلو</h4>
-        <ul>
-            <li>🍚 عدس پلو (۲۵۰ گرم): ~۳۳۹ کیلوکالری | ۱۳ گرم پروتئین | ۵.۸ گرم چربی | ۵۸ گرم کربوهیدرات | ۸.۵ گرم فیبر</li>
-            <li>🥗 سالاد: ~۷۵ کیلوکالری | ۲ گرم پروتئین | ۵ گرم چربی | ۶ گرم کربوهیدرات | ۳ گرم فیبر</li>
-            <li>🥛 ماست (۱ لیوان): ۱۵۰ کیلوکالری | ۱۲ گرم پروتئین | ۸ گرم چربی | ۱۱ گرم کربوهیدرات</li>
-        </ul>
-        <div class="meal-total">📈 مجموع: ~۵۶۴ کیلوکالری | ~۲۷ گرم پروتئین | ~۱۸.۸ گرم چربی | ~۷۵ گرم کربوهیدرات | ~۱۱.۵ گرم فیبر</div>
-    </div>
-
-    <div class="printable-section">
-        <h4>گزینه ۶ (~۵۲۳ کیلوکالری): استامبولی پلو</h4>
-        <ul>
-            <li>🍅 استامبولی پلو (۲۵۰ گرم): ~۲۹۸ کیلوکالری | ۶ گرم پروتئین | ۵.۵ گرم چربی | ۵۶ گرم کربوهیدرات | ۶.۴ گرم فیبر</li>
-            <li>🥗 سالاد: ~۷۵ کیلوکالری | ۲ گرم پروتئین | ۵ گرم چربی | ۶ گرم کربوهیدرات | ۳ گرم فیبر</li>
-            <li>🥛 ماست (۱ لیوان): ۱۵۰ کیلوکالری | ۱۲ گرم پروتئین | ۸ گرم چربی | ۱۱ گرم کربوهیدرات</li>
-        </ul>
-        <div class="meal-total">📈 مجموع: ~۵۲۳ کیلوکالری | ~۲۰ گرم پروتئین | ~۱۸.۵ گرم چربی | ~۷۳ گرم کربوهیدرات | ~۹.۴ گرم فیبر</div>
-    </div>
-
-    <div class="printable-section">
-        <h4>گزینه ۷ (~۴۹۱ کیلوکالری): لوبیا پلو</h4>
-        <ul>
-            <li>🫛 لوبیا پلو (۲۵۰ گرم): ~۲۶۶ کیلوکالری | ۷ گرم پروتئین | ۵.۵ گرم چربی | ۴۸.۲ گرم کربوهیدرات | ۶.۴ گرم فیبر</li>
-            <li>🥗 سالاد: ~۷۵ کیلوکالری | ۲ گرم پروتئین | ۵ گرم چربی | ۶ گرم کربوهیدرات | ۳ گرم فیبر</li>
-            <li>🥛 ماست (۱ لیوان): ۱۵۰ کیلوکالری | ۱۲ گرم پروتئین | ۸ گرم چربی | ۱۱ گرم کربوهیدرات</li>
-        </ul>
-        <div class="meal-total">📈 مجموع: ~۴۹۱ کیلوکالری | ~۲۱ گرم پروتئین | ~۱۸.۵ گرم چربی | ~۶۵.۲ گرم کربوهیدرات | ~۹.۴ گرم فیبر</div>
-    </div>
-
-    <div class="printable-section">
-        <h4>گزینه ۸ (~۷۴۴ کیلوکالری): خورش ایرانی با برنج</h4>
-        <ul>
-            <li>🍲 خورش (۱۵۰ گرم): ~۳۵۰ کیلوکالری | ۱۵ گرم پروتئین | ۲۵ گرم چربی | ۱۵ گرم کربوهیدرات | ۵ گرم فیبر</li>
-            <li>🍚 برنج پخته (۱۳۰ گرم): ۱۶۹ کیلوکالری | ۳.۵ گرم پروتئین | ۰.۴ گرم چربی | ۳۶.۴ گرم کربوهیدرات | ۰.۵ گرم فیبر</li>
-            <li>🥗 سالاد: ~۷۵ کیلوکالری | ۲ گرم پروتئین | ۵ گرم چربی | ۶ گرم کربوهیدرات | ۳ گرم فیبر</li>
-            <li>🥛 ماست (۱ لیوان): ۱۵۰ کیلوکالری | ۱۲ گرم پروتئین | ۸ گرم چربی | ۱۱ گرم کربوهیدرات</li>
-        </ul>
-        <div class="meal-total">📈 مجموع: ~۷۴۴ کیلوکالری | ~۳۲.۵ گرم پروتئین | ~۳۸.۴ گرم چربی | ~۶۸.۴ گرم کربوهیدرات | ~۸.۵ گرم فیبر</div>
-    </div>
-
-    <div class="printable-section">
-        <h4>گزینه ۹ (~۷۶۴ کیلوکالری): میرزا قاسمی (وعده بزرگ)</h4>
-        <ul>
-            <li>🍆 ۱ عدد بادمجان کبابی (۲۵۰ گرم): ۸۸ کیلوکالری | ۲.۵ گرم پروتئین | ۰.۵ گرم چربی | ۲۲ گرم کربوهیدرات | ۷.۵ گرم فیبر</li>
-            <li>🍅 گوجه (در سس، ~۱۰۰ گرم): ۱۸ کیلوکالری | ۰.۹ گرم پروتئین | ۰.۲ گرم چربی | ۳.۹ گرم کربوهیدرات | ۱.۲ گرم فیبر</li>
-            <li>🍳 ۳ عدد تخم مرغ بزرگ (۱۵۰ گرم): ۲۳۳ کیلوکالری | ۱۹.۵ گرم پروتئین | ۱۶.۵ گرم چربی | ۱.۷ گرم کربوهیدرات</li>
-            <li>🍞 نان (۸۰ گرم، مثال: سنگک): ۲۰۰ کیلوکالری | ۸ گرم پروتئین | ۱.۵ گرم چربی | ۴۱ گرم کربوهیدرات | ۶.۷ گرم فیبر</li>
-            <li>🥗 سالاد: ~۷۵ کیلوکالری | ۲ گرم پروتئین | ۵ گرم چربی | ۶ گرم کربوهیدرات | ۳ گرم فیبر</li>
-            <li>🥛 ماست (۱ لیوان): ۱۵۰ کیلوکالری | ۱۲ گرم پروتئین | ۸ گرم چربی | ۱۱ گرم کربوهیدرات</li>
-        </ul>
-        <div class="meal-total">📈 مجموع: ~۷۶۴ کیلوکالری | ~۴۴.۹ گرم پروتئین | ~۳۱.۷ گرم چربی | ~۸۵.۶ گرم کربوهیدرات | ~۱۸.۴ گرم فیبر</div>
-    </div>
-
-    <div class="printable-section">
-        <h4>گزینه ۱۰ (~۵۸۹ کیلوکالری): دال عدس با برنج</h4>
-        <ul>
-            <li>🥣 عدس قرمز پخته (۱۵۰ گرم): ۱۷۰ کیلوکالری | ۱۲ گرم پروتئین | ۰.۵ گرم چربی | ۳۰ گرم کربوهیدرات | ۱۱ گرم فیبر</li>
-            <li>🍚 برنج پخته (۱۳۰ گرم): ۱۶۹ کیلوکالری | ۳.۵ گرم پروتئین | ۰.۴ گرم چربی | ۳۶.۴ گرم کربوهیدرات | ۰.۵ گرم فیبر</li>
-            <li>🧈 کره (۱ قاشق غذاخوری / ۱۴ گرم): ۱۰۰ کیلوکالری | ۰.۱ گرم پروتئین | ۱۱.۴ گرم چربی</li>
-            <li>🥛 ماست (۱ لیوان): ۱۵۰ کیلوکالری | ۱۲ گرم پروتئین | ۸ گرم چربی | ۱۱ گرم کربوهیدرات</li>
-        </ul>
-        <div class="meal-total">📈 مجموع: ~۵۸۹ کیلوکالری | ~۲۷.۶ گرم پروتئین | ~۲۰.۳ گرم چربی | ~۷۷.۴ گرم کربوهیدرات | ~۱۱.۵ گرم فیبر</div>
-    </div>
-
-    <div class="printable-section">
-        <h4>گزینه ۱۱ (~۷۴۰ کیلوکالری): کوکو سیب‌زمینی با پنیر خامه‌ای و نان</h4>
-        <ul>
-            <li>🥔 ۱ عدد سیب‌زمینی متوسط پخته (۱۷۰ گرم): ۱۴۸ کیلوکالری | ۳.۶ گرم پروتئین | ۰.۲ گرم چربی | ۳۴ گرم کربوهیدرات | ۳.۶ گرم فیبر</li>
-            <li>🍳 ۲ عدد تخم مرغ بزرگ (۱۰۰ گرم): ۱۵۵ کیلوکالری | ۱۳ گرم پروتئین | ۱۱ گرم چربی | ۱.۱ گرم کربوهیدرات</li>
-            <li>🧈 کره (۱ قاشق غذاخوری / ۱۴ گرم): ۱۰۰ کیلوکالری | ۰.۱ گرم پروتئین | ۱۱.۴ گرم چربی</li>
-            <li>🧀 پنیر خامه‌ای (۴۰ گرم): ۱۳۷ کیلوکالری | ۲.۴ گرم پروتئین | ۱۳.۸ گرم چربی | ۱.۶ گرم کربوهیدرات</li>
-            <li>🍞 نان سنگک (۸۰ گرم): ۲۰۰ کیلوکالری | ۸ گرم پروتئین | ۱.۵ گرم چربی | ۴۱ گرم کربوهیدرات | ۶.۷ گرم فیبر</li>
-        </ul>
-        <div class="meal-total">📈 مجموع: ~۷۴۰ کیلوکالری | ~۲۷.۱ گرم پروتئین | ~۳۷.۹ گرم چربی | ~۷۷.۷ گرم کربوهیدرات | ~۱۰.۳ گرم فیبر</div>
-    </div>
+    <h2>🍛 وعده ۲: گزینه‌های ناهار/شام (۳۵ گزینه)</h2>
+    <div id="dinner-options"></div>
 
 </div>
 
+<script>
+    // Data for all meals with full macronutrient details
+    const allMeals = {
+        breakfast: [
+            { name: 'املت گوجه و پنیر', ingredients: [{ emoji: '🍳', name: 'تخم مرغ بزرگ', baseGrams: 100, calories: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { emoji: '🧀', name: 'پنیر خامه‌ای', baseGrams: 30, calories: 64, p: 1.8, f: 6.3, c: 1.1, fi: 0 }, { emoji: '🍅', name: 'گوجه متوسط', baseGrams: 120, calories: 22, p: 1.1, f: 0.2, c: 4.7, fi: 1.4 }, { emoji: '🧈', name: 'کره', baseGrams: 14, calories: 100, p: 0.1, f: 11.4, c: 0, fi: 0 }, { emoji: '🍞', name: 'نان سنگک', baseGrams: 50, calories: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7, isCarb: true }] },
+            { name: 'عدسی با کره', ingredients: [{ emoji: '🥣', name: 'عدس پخته', baseGrams: 150, calories: 174, p: 13.5, f: 0.6, c: 30, fi: 12 }, { emoji: '🧈', name: 'کره', baseGrams: 10, calories: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { emoji: '🍞', name: 'نان بربری', baseGrams: 50, calories: 137, p: 4.4, f: 0.6, c: 28.1, fi: 1.2, isCarb: true }, { emoji: '🧀', name: 'پنیر خامه‌ای', baseGrams: 30, calories: 64, p: 1.8, f: 6.3, c: 1.1, fi: 0 }] },
+            { name: 'میرزا قاسمی با ماست', ingredients: [{ emoji: '🍆', name: 'بادمجان کبابی', baseGrams: 100, calories: 35, p: 1, f: 0.2, c: 8, fi: 3 }, { emoji: '🍳', name: 'تخم مرغ بزرگ', baseGrams: 50, calories: 78, p: 6.5, f: 5.5, c: 0.6, fi: 0 }, { emoji: '🍅', name: 'گوجه متوسط', baseGrams: 120, calories: 22, p: 1.1, f: 0.2, c: 4.7, fi: 1.4 }, { emoji: '🧈', name: 'کره', baseGrams: 14, calories: 100, p: 0.1, f: 11.4, c: 0, fi: 0 }, { emoji: '🍞', name: 'نان تافتون', baseGrams: 50, calories: 143, p: 4.4, f: 1.2, c: 28.7, fi: 1.6, isCarb: true }, { emoji: '🥛', name: 'ماست پرچرب', baseGrams: 100, calories: 95, p: 9, f: 5, c: 3, fi: 0 }] },
+            { name: 'پنیر و کره بادام زمینی', ingredients: [{ emoji: '🧀', name: 'پنیر خامه‌ای', baseGrams: 30, calories: 64, p: 1.8, f: 6.3, c: 1.1, fi: 0 }, { emoji: '🥜', name: 'کره بادام زمینی', baseGrams: 16, calories: 94, p: 4, f: 8, c: 3, fi: 1 }, { emoji: '🍞', name: 'نان بربری', baseGrams: 50, calories: 137, p: 4.4, f: 0.6, c: 28.1, fi: 1.2, isCarb: true }, { emoji: '🧈', name: 'کره', baseGrams: 10, calories: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }] },
+            { name: 'پنیر، گردو و خیار', ingredients: [{ emoji: '🧀', name: 'پنیر خامه‌ای', baseGrams: 30, calories: 64, p: 1.8, f: 6.3, c: 1.1, fi: 0 }, { emoji: '🌰', name: 'گردو', baseGrams: 15, calories: 98, p: 2.3, f: 9.8, c: 2.1, fi: 1 }, { emoji: '🍞', name: 'نان لواش', baseGrams: 50, calories: 140, p: 4.4, f: 1.1, c: 28.7, fi: 1.5, isCarb: true }, { emoji: '🥒', name: 'خیار متوسط', baseGrams: 150, calories: 23, p: 1, f: 0.2, c: 5.4, fi: 0.8 }, { emoji: '🧈', name: 'کره', baseGrams: 14, calories: 100, p: 0.1, f: 11.4, c: 0, fi: 0 }] },
+            { name: 'شیر و خرما', ingredients: [{ emoji: '🥛', name: 'شیر', baseGrams: 240, calories: 150, p: 8, f: 8, c: 12, fi: 0 }, { emoji: '🌴', name: 'خرما', baseGrams: 50, calories: 115, p: 1, f: 0.1, c: 31, fi: 3.3 }, { emoji: '🍞', name: 'نان جو', baseGrams: 50, calories: 155, p: 6, f: 2, c: 28, fi: 4, isCarb: true }] },
+            { name: 'حلیم بدون گوشت', ingredients: [{ emoji: '🥣', name: 'حلیم گندم', baseGrams: 200, calories: 280, p: 10, f: 4, c: 50, fi: 8 }, { emoji: '🧈', name: 'کره', baseGrams: 10, calories: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { emoji: '🍞', name: 'نان سنگک', baseGrams: 50, calories: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7, isCarb: true }] },
+            { name: 'ارده و شیره', ingredients: [{ emoji: '🍯', name: 'ارده', baseGrams: 30, calories: 180, p: 5, f: 16, c: 6, fi: 3 }, { emoji: '🍇', name: 'شیره انگور', baseGrams: 20, calories: 60, p: 0.2, f: 0, c: 15, fi: 0 }, { emoji: '🍞', name: 'نان سنگک', baseGrams: 50, calories: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7, isCarb: true }, { emoji: '🥛', name: 'شیر', baseGrams: 120, calories: 75, p: 4, f: 4, c: 6, fi: 0 }] },
+            { name: 'تخم مرغ آب‌پز و نان', ingredients: [{ emoji: '🥚', name: 'تخم مرغ آب‌پز', baseGrams: 100, calories: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { emoji: '🍞', name: 'نان سنگک', baseGrams: 50, calories: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7, isCarb: true }, { emoji: '🧈', name: 'کره', baseGrams: 10, calories: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { emoji: '🥒', name: 'خیار و گوجه', baseGrams: 150, calories: 60, p: 2, f: 0.5, c: 10, fi: 2 }] },
+            { name: 'ماست و خیار با نان', ingredients: [{ emoji: '🥛', name: 'ماست پرچرب', baseGrams: 200, calories: 190, p: 18, f: 10, c: 6, fi: 0 }, { emoji: '🥒', name: 'خیار', baseGrams: 150, calories: 23, p: 1, f: 0.2, c: 5.4, fi: 0.8 }, { emoji: '🌰', name: 'گردو', baseGrams: 10, calories: 65, p: 1.5, f: 6.5, c: 1.4, fi: 0.7 }, { emoji: '🍞', name: 'نان خشک', baseGrams: 50, calories: 170, p: 5, f: 1, c: 35, fi: 3, isCarb: true }] },
+            { name: 'املت قارچ', ingredients: [{ emoji: '🍳', name: 'تخم مرغ بزرگ', baseGrams: 100, calories: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { emoji: '🍄', name: 'قارچ', baseGrams: 100, calories: 22, p: 3.1, f: 0.3, c: 3.3, fi: 1 }, { emoji: '🧈', name: 'کره', baseGrams: 14, calories: 100, p: 0.1, f: 11.4, c: 0, fi: 0 }, { emoji: '🍞', name: 'نان سنگک', baseGrams: 50, calories: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7, isCarb: true }, { emoji: '🧀', name: 'پنیر خامه‌ای', baseGrams: 30, calories: 64, p: 1.8, f: 6.3, c: 1.1, fi: 0 }] },
+            { name: 'شیر و عسل با نان', ingredients: [{ emoji: '🥛', name: 'شیر', baseGrams: 240, calories: 150, p: 8, f: 8, c: 12, fi: 0 }, { emoji: '🍯', name: 'عسل', baseGrams: 21, calories: 64, p: 0.1, f: 0, c: 17, fi: 0 }, { emoji: '🍞', name: 'نان تست', baseGrams: 50, calories: 140, p: 5, f: 2, c: 25, fi: 2, isCarb: true }, { emoji: '🧈', name: 'کره', baseGrams: 10, calories: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }] },
+            { name: 'جو دوسر پرک با شیر', ingredients: [{ emoji: '🥣', name: 'جو دوسر', baseGrams: 40, calories: 150, p: 5, f: 2.5, c: 27, fi: 4 }, { emoji: '🥛', name: 'شیر', baseGrams: 240, calories: 150, p: 8, f: 8, c: 12, fi: 0 }, { emoji: '🌰', name: 'گردو', baseGrams: 10, calories: 65, p: 1.5, f: 6.5, c: 1.4, fi: 0.7 }, { emoji: '🍯', name: 'عسل', baseGrams: 21, calories: 64, p: 0.1, f: 0, c: 17, fi: 0 }] },
+            { name: 'حلوا شکری با نان', ingredients: [{ emoji: '🍮', name: 'حلوا شکری', baseGrams: 50, calories: 250, p: 7, f: 15, c: 22, fi: 2 }, { emoji: '🍞', name: 'نان بربری', baseGrams: 50, calories: 137, p: 4.4, f: 0.6, c: 28.1, fi: 1.2, isCarb: true }, { emoji: '🥛', name: 'شیر', baseGrams: 120, calories: 75, p: 4, f: 4, c: 6, fi: 0 }] },
+            { name: 'کره و پنیر خامه‌ای', ingredients: [{ emoji: '🧈', name: 'کره', baseGrams: 20, calories: 144, p: 0.2, f: 16.2, c: 0, fi: 0 }, { emoji: '🧀', name: 'پنیر خامه‌ای', baseGrams: 60, calories: 128, p: 3.6, f: 12.6, c: 2.2, fi: 0 }] },
+            { name: 'کتو: املت اسفناج و پنیر', isKeto: true, ingredients: [{ emoji: '🍳', name: 'تخم مرغ بزرگ', baseGrams: 150, calories: 233, p: 19.5, f: 16.5, c: 1.7, fi: 0 }, { emoji: '🥬', name: 'اسفناج', baseGrams: 100, calories: 23, p: 2.9, f: 0.4, c: 3.6, fi: 2.2 }, { emoji: '🧀', name: 'پنیر خامه‌ای', baseGrams: 50, calories: 107, p: 3, f: 10, c: 1.5, fi: 0 }, { emoji: '🧈', name: 'کره', baseGrams: 10, calories: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }] },
+            { name: 'کتو: تخم مرغ و آووکادو', isKeto: true, ingredients: [{ emoji: '🍳', name: 'تخم مرغ بزرگ', baseGrams: 100, calories: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { emoji: '🥑', name: 'آووکادو', baseGrams: 100, calories: 160, p: 2, f: 15, c: 8.5, fi: 6.7 }, { emoji: '🧈', name: 'کره', baseGrams: 10, calories: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }] },
+            { name: 'کتو: املت با پنیر موزارلا', isKeto: true, ingredients: [{ emoji: '🍳', name: 'تخم مرغ بزرگ', baseGrams: 150, calories: 233, p: 19.5, f: 16.5, c: 1.7, fi: 0 }, { emoji: '🧀', name: 'پنیر موزارلا', baseGrams: 60, calories: 140, p: 12, f: 9, c: 2, fi: 0 }, { emoji: '🧈', name: 'کره', baseGrams: 10, calories: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }] },
+            { name: 'کتو: ماست پرچرب و آجیل', isKeto: true, ingredients: [{ emoji: '🥛', name: 'ماست پرچرب', baseGrams: 200, calories: 190, p: 18, f: 10, c: 6, fi: 0 }, { emoji: '🌰', name: 'مخلوط آجیل', baseGrams: 30, calories: 180, p: 6, f: 15, c: 6, fi: 3 }] },
+            { name: 'کتو: فرنی بادام', isKeto: true, ingredients: [{ emoji: '🥛', name: 'شیر بادام', baseGrams: 240, calories: 40, p: 1, f: 3, c: 1, fi: 1 }, { emoji: '🥜', name: 'آرد بادام', baseGrams: 50, calories: 290, p: 10, f: 25, c: 10, fi: 5 }, { emoji: '🧈', name: 'کره', baseGrams: 10, calories: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }] },
+        ],
+        dinner: [
+            { name: 'خوراک لوبیا چیتی', ingredients: [{ emoji: '🫘', name: 'لوبیا چیتی پخته', baseGrams: 200, calories: 290, p: 18, f: 1.2, c: 54, fi: 18 }, { emoji: '🍚', name: 'برنج پخته', baseGrams: 60, calories: 78, p: 1.6, f: 0.2, c: 16.8, fi: 0.2, isCarb: true }, { emoji: '🧈', name: 'کره', baseGrams: 5, calories: 36, p: 0, f: 4, c: 0, fi: 0 }, { emoji: '🥛', name: 'ماست پرچرب', baseGrams: 245, calories: 150, p: 12, f: 8, c: 11, fi: 0 }] },
+            { name: 'کشک بادمجان', ingredients: [{ emoji: '🍆', name: 'بادمجان کبابی', baseGrams: 200, calories: 70, p: 2, f: 0.4, c: 16, fi: 6 }, { emoji: '🥣', name: 'کشک', baseGrams: 50, calories: 55, p: 8, f: 1, c: 4, fi: 0 }, { emoji: '🧈', name: 'کره', baseGrams: 10, calories: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { emoji: '🌰', name: 'گردو', baseGrams: 10, calories: 65, p: 1.5, f: 6.5, c: 1.4, fi: 0.7 }, { emoji: '🍞', name: 'نان سنگک', baseGrams: 40, calories: 100, p: 4, f: 0.5, c: 22, fi: 3, isCarb: true }, { emoji: '🥛', name: 'ماست پرچرب', baseGrams: 245, calories: 150, p: 12, f: 8, c: 11, fi: 0 }] },
+            { name: 'کوکو سبزی', ingredients: [{ emoji: '🌿', name: 'کوکو سبزی', baseGrams: 150, calories: 250, p: 14, f: 18, c: 8, fi: 4 }, { emoji: '🧈', name: 'کره', baseGrams: 5, calories: 36, p: 0, f: 4, c: 0, fi: 0 }, { emoji: '🧀', name: 'پنیر خامه‌ای', baseGrams: 30, calories: 64, p: 1.8, f: 6.3, c: 1.1, fi: 0 }, { emoji: '🍚', name: 'برنج', baseGrams: 60, calories: 78, p: 1.6, f: 0.2, c: 16.8, fi: 0.2, isCarb: true }, { emoji: '🥛', name: 'ماست پرچرب', baseGrams: 245, calories: 150, p: 12, f: 8, c: 11, fi: 0 }] },
+            { name: 'ماکارونی با سویا', ingredients: [{ emoji: '🍝', name: 'ماکارونی با سویا', baseGrams: 180, calories: 245, p: 11.5, f: 7, c: 35, fi: 4 }, { emoji: '🥗', name: 'سالاد', baseGrams: 150, calories: 75, p: 2, f: 5, c: 6, fi: 3 }, { emoji: '🥛', name: 'ماست پرچرب', baseGrams: 245, calories: 150, p: 12, f: 8, c: 11, fi: 0 }] },
+            { name: 'عدس پلو', ingredients: [{ emoji: '🍚', name: 'عدس پلو', baseGrams: 180, calories: 244, p: 9.4, f: 5.2, c: 40, fi: 6.1 }, { emoji: '🥗', name: 'سالاد', baseGrams: 150, calories: 75, p: 2, f: 5, c: 6, fi: 3 }, { emoji: '🥛', name: 'ماست پرچرب', baseGrams: 245, calories: 150, p: 12, f: 8, c: 11, fi: 0 }] },
+            { name: 'استامبولی پلو', ingredients: [{ emoji: '🍅', name: 'استامبولی پلو', baseGrams: 180, calories: 214, p: 4.3, f: 4.9, c: 38, fi: 4.6 }, { emoji: '🥗', name: 'سالاد', baseGrams: 150, calories: 75, p: 2, f: 5, c: 6, fi: 3 }, { emoji: '🥛', name: 'ماست پرچرب', baseGrams: 245, calories: 150, p: 12, f: 8, c: 11, fi: 0 }] },
+            { name: 'لوبیا پلو', ingredients: [{ emoji: '🫛', name: 'لوبیا پلو', baseGrams: 180, calories: 191, p: 5, f: 4.9, c: 32, fi: 4.6 }, { emoji: '🥗', name: 'سالاد', baseGrams: 150, calories: 75, p: 2, f: 5, c: 6, fi: 3 }, { emoji: '🥛', name: 'ماست پرچرب', baseGrams: 245, calories: 150, p: 12, f: 8, c: 11, fi: 0 }] },
+            { name: 'خورش ایرانی (گیاهی)', ingredients: [{ emoji: '🍲', name: 'خورش', baseGrams: 120, calories: 280, p: 12, f: 20, c: 12, fi: 4 }, { emoji: '🍚', name: 'برنج', baseGrams: 60, calories: 78, p: 1.6, f: 0.2, c: 16.8, fi: 0.2, isCarb: true }, { emoji: '🥗', name: 'سالاد', baseGrams: 150, calories: 75, p: 2, f: 5, c: 6, fi: 3 }, { emoji: '🥛', name: 'ماست پرچرب', baseGrams: 245, calories: 150, p: 12, f: 8, c: 11, fi: 0 }] },
+            { name: 'میرزا قاسمی (بزرگ)', ingredients: [{ emoji: '🍆', name: 'بادمجان کبابی', baseGrams: 250, calories: 88, p: 2.5, f: 0.5, c: 22, fi: 7.5 }, { emoji: '🍅', name: 'گوجه', baseGrams: 100, calories: 18, p: 0.9, f: 0.2, c: 3.9, fi: 1.2 }, { emoji: '🍳', name: 'تخم مرغ بزرگ', baseGrams: 100, calories: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { emoji: '🍞', name: 'نان سنگک', baseGrams: 50, calories: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7, isCarb: true }, { emoji: '🥗', name: 'سالاد', baseGrams: 150, calories: 75, p: 2, f: 5, c: 6, fi: 3 }, { emoji: '🥛', name: 'ماست پرچرب', baseGrams: 245, calories: 150, p: 12, f: 8, c: 11, fi: 0 }] },
+            { name: 'دال عدس', ingredients: [{ emoji: '🥣', name: 'دال عدس پخته', baseGrams: 150, calories: 170, p: 12, f: 0.5, c: 30, fi: 11 }, { emoji: '🍚', name: 'برنج', baseGrams: 80, calories: 104, p: 2.1, f: 0.2, c: 22.4, fi: 0.3, isCarb: true }, { emoji: '🧈', name: 'کره', baseGrams: 14, calories: 100, p: 0.1, f: 11.4, c: 0, fi: 0 }, { emoji: '🥛', name: 'ماست پرچرب', baseGrams: 245, calories: 150, p: 12, f: 8, c: 11, fi: 0 }] },
+            { name: 'کوکو سیب‌زمینی', ingredients: [{ emoji: '🥔', name: 'سیب‌زمینی پخته', baseGrams: 170, calories: 148, p: 3.6, f: 0.2, c: 34, fi: 3.6 }, { emoji: '🍳', name: 'تخم مرغ بزرگ', baseGrams: 100, calories: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { emoji: '🧈', name: 'کره', baseGrams: 10, calories: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { emoji: '🧀', name: 'پنیر خامه‌ای', baseGrams: 30, calories: 64, p: 1.8, f: 6.3, c: 1.1, fi: 0 }, { emoji: '🍞', name: 'نان سنگک', baseGrams: 50, calories: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7, isCarb: true }] },
+            { name: 'پیتزا پپرونی ایرانی', ingredients: [{ emoji: '🍕', name: 'خمیر پیتزا نازک', baseGrams: 100, calories: 220, p: 8, f: 2, c: 42, fi: 2 }, { emoji: '🧀', name: 'پنیر پیتزا', baseGrams: 60, calories: 140, p: 12, f: 9, c: 2, fi: 0 }, { emoji: '🌶️', name: 'پپرونی گیاهی', baseGrams: 50, calories: 150, p: 10, f: 12, c: 2, fi: 1 }, { emoji: '🍅', name: 'سس گوجه', baseGrams: 50, calories: 20, p: 1, f: 0, c: 4, fi: 1 }] },
+            { name: 'پیتزا مخلوط ایرانی (گیاهی)', ingredients: [{ emoji: '🍕', name: 'خمیر پیتزا نازک', baseGrams: 100, calories: 220, p: 8, f: 2, c: 42, fi: 2 }, { emoji: '🧀', name: 'پنیر پیتزا', baseGrams: 60, calories: 140, p: 12, f: 9, c: 2, fi: 0 }, { emoji: '🌱', name: 'سویا', baseGrams: 50, calories: 90, p: 8.5, f: 4.5, c: 4.5, fi: 3 }, { emoji: '🍄', name: 'قارچ و فلفل دلمه‌ای', baseGrams: 100, calories: 25, p: 3, f: 0.3, c: 4, fi: 1.5 }, { emoji: '🍅', name: 'سس گوجه', baseGrams: 50, calories: 20, p: 1, f: 0, c: 4, fi: 1 }] },
+            { name: 'سیب زمینی با قارچ و پنیر', ingredients: [{ emoji: '🍟', name: 'سیب‌زمینی', baseGrams: 250, calories: 200, p: 4, f: 0.2, c: 45, fi: 5 }, { emoji: '🧈', name: 'کره', baseGrams: 14, calories: 100, p: 0.1, f: 11.4, c: 0, fi: 0 }, { emoji: '🧀', name: 'پنیر پیتزا', baseGrams: 60, calories: 140, p: 12, f: 9, c: 2, fi: 0 }, { emoji: '🍄', name: 'قارچ', baseGrams: 100, calories: 25, p: 3, f: 0.3, c: 4, fi: 1.5 }, { emoji: '🥛', name: 'سس ماست', baseGrams: 100, calories: 60, p: 10, f: 0.4, c: 4, fi: 0 }] },
+            { name: 'ذرت مکزیکی', ingredients: [{ emoji: '🌽', name: 'ذرت پخته', baseGrams: 200, calories: 220, p: 8, f: 3, c: 48, fi: 5 }, { emoji: '🧀', name: 'پنیر پیتزا', baseGrams: 60, calories: 140, p: 12, f: 9, c: 2, fi: 0 }, { emoji: '🍄', name: 'قارچ', baseGrams: 100, calories: 22, p: 3.1, f: 0.3, c: 3.3, fi: 1 }, { emoji: '🧈', name: 'کره', baseGrams: 14, calories: 100, p: 0.1, f: 11.4, c: 0, fi: 0 }, { emoji: '🥛', name: 'ماست پرچرب', baseGrams: 100, calories: 95, p: 9, f: 5, c: 3, fi: 0 }] },
+            { name: 'خوراک قارچ و سویا', ingredients: [{ emoji: '🍄', name: 'قارچ', baseGrams: 200, calories: 44, p: 6.2, f: 0.6, c: 6.6, fi: 2 }, { emoji: '🌱', name: 'سویا', baseGrams: 100, calories: 180, p: 17, f: 9, c: 9, fi: 6 }, { emoji: '🧅', name: 'پیاز و گوجه', baseGrams: 150, calories: 60, p: 2, f: 0.5, c: 10, fi: 2 }, { emoji: '🧈', name: 'کره', baseGrams: 14, calories: 100, p: 0.1, f: 11.4, c: 0, fi: 0 }, { emoji: '🍞', name: 'نان سنگک', baseGrams: 50, calories: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7, isCarb: true }] },
+            { name: 'فلافل در فر', ingredients: [{ emoji: '🥙', name: 'فلافل (۶ عدد)', baseGrams: 150, calories: 240, p: 12, f: 12, c: 24, fi: 10 }, { emoji: '🍞', name: 'نان پیتا', baseGrams: 50, calories: 140, p: 5, f: 1, c: 28, fi: 1.5, isCarb: true }, { emoji: '🥗', name: 'سالاد و سبزیجات', baseGrams: 150, calories: 75, p: 2, f: 5, c: 6, fi: 3 }, { emoji: '🥛', name: 'سس ماست', baseGrams: 100, calories: 95, p: 9, f: 5, c: 3, fi: 0 }] },
+            { name: 'خوراک بامیه (گیاهی)', ingredients: [{ emoji: '🍆', name: 'بامیه و گوجه', baseGrams: 300, calories: 160, p: 6, f: 1, c: 35, fi: 10 }, { emoji: '🍚', name: 'برنج', baseGrams: 80, calories: 104, p: 2.1, f: 0.2, c: 22.4, fi: 0.3, isCarb: true }, { emoji: '🧈', name: 'کره', baseGrams: 10, calories: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { emoji: '🥛', name: 'ماست پرچرب', baseGrams: 245, calories: 150, p: 12, f: 8, c: 11, fi: 0 }] },
+            { name: 'تاس کباب (گیاهی)', ingredients: [{ emoji: '🥔', name: 'سیب‌زمینی، هویج، به', baseGrams: 300, calories: 250, p: 5, f: 1, c: 55, fi: 8 }, { emoji: '🧈', name: 'کره', baseGrams: 10, calories: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { emoji: '🍞', name: 'نان سنگک', baseGrams: 50, calories: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7, isCarb: true }, { emoji: '🥛', name: 'ماست پرچرب', baseGrams: 150, calories: 90, p: 13.5, f: 7.5, c: 4.5, fi: 0 }] },
+            { name: 'سالاد الویه (گیاهی)', ingredients: [{ emoji: '🥔', name: 'سیب‌زمینی پخته', baseGrams: 150, calories: 130, p: 3, f: 0.2, c: 30, fi: 3 }, { emoji: '🥚', name: 'تخم مرغ آب‌پز', baseGrams: 100, calories: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { emoji: '🥕', name: 'نخود فرنگی و هویج', baseGrams: 100, calories: 80, p: 5, f: 0.5, c: 14, fi: 5 }, { emoji: '🥛', name: 'سس ماست', baseGrams: 150, calories: 90, p: 13.5, f: 7.5, c: 4.5, fi: 0 }, { emoji: '🍞', name: 'نان', baseGrams: 50, calories: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7, isCarb: true }] },
+            { name: 'سالاد ماکارونی (گیاهی)', ingredients: [{ emoji: '🍝', name: 'ماکارونی پخته', baseGrams: 80, calories: 125, p: 4.5, f: 0.9, c: 25, fi: 1.8 }, { emoji: '🥚', name: 'تخم مرغ آب‌پز', baseGrams: 50, calories: 78, p: 6.5, f: 5.5, c: 0.6, fi: 0 }, { emoji: '🥒', name: 'خیارشور و ذرت', baseGrams: 100, calories: 100, p: 3, f: 1, c: 22, fi: 3 }, { emoji: '🥛', name: 'سس ماست', baseGrams: 150, calories: 90, p: 13.5, f: 7.5, c: 4.5, fi: 0 }] },
+            { name: 'دمپختک', ingredients: [{ emoji: '🍚', name: 'برنج', baseGrams: 80, calories: 280, p: 6, f: 0.6, c: 63, fi: 1.2 }, { emoji: '🥣', name: 'لپه', baseGrams: 50, calories: 170, p: 12, f: 0.6, c: 30, fi: 13 }, { emoji: '🧈', name: 'کره', baseGrams: 5, calories: 36, p: 0, f: 4, c: 0, fi: 0 }, { emoji: '🥛', name: 'ماست پرچرب', baseGrams: 150, calories: 90, p: 13.5, f: 7.5, c: 4.5, fi: 0 }] },
+            { name: 'آش رشته', ingredients: [{ emoji: '🍲', name: 'آش رشته (یک کاسه)', baseGrams: 400, calories: 450, p: 18, f: 15, c: 65, fi: 15 }, { emoji: '🥣', name: 'کشک', baseGrams: 30, calories: 33, p: 4.8, f: 0.6, c: 2.4, fi: 0 }, { emoji: '🧅', name: 'پیاز داغ', baseGrams: 10, calories: 60, p: 0.2, f: 6, c: 2, fi: 0.3 }] },
+            { name: 'اشکنه', ingredients: [{ emoji: '🍳', name: 'تخم مرغ', baseGrams: 100, calories: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { emoji: '🥔', name: 'پیاز و سیب زمینی', baseGrams: 150, calories: 150, p: 3, f: 0.2, c: 33, fi: 4 }, { emoji: '🧈', name: 'کره', baseGrams: 10, calories: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { emoji: '🍞', name: 'نان', baseGrams: 50, calories: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7, isCarb: true }] },
+            { name: 'کتو: خوراک کدو و پنیر', isKeto: true, ingredients: [{ emoji: '🥒', name: 'کدو سبز', baseGrams: 300, calories: 60, p: 3.6, f: 0.9, c: 9.3, fi: 3 }, { emoji: '🧀', name: 'پنیر خامه‌ای', baseGrams: 100, calories: 213, p: 6, f: 21, c: 3, fi: 0 }, { emoji: '🧈', name: 'کره', baseGrams: 15, calories: 108, p: 0.1, f: 12.2, c: 0, fi: 0 }, { emoji: '🌰', name: 'گردو', baseGrams: 15, calories: 98, p: 2.3, f: 9.8, c: 2.1, fi: 1 }] },
+            { name: 'کتو: گل کلم پلو با سویا', isKeto: true, ingredients: [{ emoji: '🥦', name: 'گل کلم', baseGrams: 300, calories: 75, p: 5.7, f: 0.8, c: 15, fi: 6 }, { emoji: '🌱', name: 'سویا', baseGrams: 100, calories: 180, p: 17, f: 9, c: 9, fi: 6 }, { emoji: '🧈', name: 'کره', baseGrams: 15, calories: 108, p: 0.1, f: 12.2, c: 0, fi: 0 }, { emoji: '🥛', name: 'ماست پرچرب', baseGrams: 150, calories: 90, p: 13.5, f: 7.5, c: 4.5, fi: 0 }] },
+            { name: 'کتو: کله جوش', isKeto: true, ingredients: [{ emoji: '🥣', name: 'کشک', baseGrams: 150, calories: 165, p: 24, f: 3, c: 12, fi: 0 }, { emoji: '🌰', name: 'گردو', baseGrams: 30, calories: 195, p: 4.5, f: 19.5, c: 4.1, fi: 2 }, { emoji: '🧈', name: 'کره', baseGrams: 15, calories: 108, p: 0.1, f: 12.2, c: 0, fi: 0 }] },
+            { name: 'کتو: خوراک قارچ و تخم مرغ', isKeto: true, ingredients: [{ emoji: '🍄', name: 'قارچ', baseGrams: 300, calories: 66, p: 9.3, f: 1, c: 9.9, fi: 3 }, { emoji: '🍳', name: 'تخم مرغ', baseGrams: 150, calories: 233, p: 19.5, f: 16.5, c: 1.7, fi: 0 }, { emoji: '🧈', name: 'کره', baseGrams: 15, calories: 108, p: 0.1, f: 12.2, c: 0, fi: 0 }, { emoji: '🧀', name: 'پنیر خامه‌ای', baseGrams: 50, calories: 107, p: 3, f: 10, c: 1.5, fi: 0 }] },
+            { name: 'کتو: سالاد تخم مرغ و آووکادو', isKeto: true, ingredients: [{ emoji: '🥚', name: 'تخم مرغ آب‌پز', baseGrams: 150, calories: 233, p: 19.5, f: 16.5, c: 1.7, fi: 0 }, { emoji: '🥑', name: 'آووکادو', baseGrams: 100, calories: 160, p: 2, f: 15, c: 8.5, fi: 6.7 }, { emoji: '🥣', name: 'سس مایونز کتو', baseGrams: 30, calories: 200, p: 0.5, f: 22, c: 0.5, fi: 0 }] },
+            { name: 'کتو: سوپ کرفس و خامه', isKeto: true, ingredients: [{ emoji: '🥣', name: 'کرفس و پیاز', baseGrams: 300, calories: 100, p: 3, f: 0.5, c: 22, fi: 5 }, { emoji: '🥛', name: 'خامه صبحانه', baseGrams: 100, calories: 300, p: 2, f: 30, c: 3, fi: 0 }, { emoji: '🧈', name: 'کره', baseGrams: 15, calories: 108, p: 0.1, f: 12.2, c: 0, fi: 0 }] },
+        ]
+    };
+
+    const breakfastContainer = document.getElementById('breakfast-options');
+    const dinnerContainer = document.getElementById('dinner-options');
+
+    function renderMeals(container, meals, startIndex = 1) {
+        container.innerHTML = '';
+        meals.forEach((meal, index) => {
+            const mealIndex = startIndex + index;
+            const section = document.createElement('div');
+            section.className = 'printable-section';
+            if (meal.isKeto) {
+                section.classList.add('keto-meal');
+            }
+            section.dataset.mealName = meal.name;
+            let originalCal = 0;
+            let listItems = '';
+            meal.ingredients.forEach(ing => {
+                originalCal += ing.calories;
+                listItems += `<li data-emoji="${ing.emoji}" data-name="${ing.name}" data-base-grams="${ing.baseGrams}" data-calories="${ing.calories}" ${ing.isCarb ? 'data-carb="true"' : ''} 
+                data-p="${ing.p || 0}" data-f="${ing.f || 0}" data-c="${ing.c || 0}" data-fi="${ing.fi || 0}"></li>`;
+            });
+            
+            section.dataset.originalCalories = originalCal;
+            const ketoTag = meal.isKeto ? '<span class="keto-tag">کتو</span>' : '';
+
+            section.innerHTML = `<h4>${ketoTag}${mealIndex}. ${meal.name} (<span class="meal-calories"></span> کیلوکالری) <span class="meal-macros-summary"></span></h4><ul class="ingredient-list"></ul>`;
+            container.appendChild(section);
+        });
+    }
+
+    renderMeals(breakfastContainer, allMeals.breakfast, 1);
+    renderMeals(dinnerContainer, allMeals.dinner, 1);
+
+    const weightInput = document.getElementById('currentWeight');
+    const lossInput = document.getElementById('targetWeeklyLoss');
+    const calculateBtn = document.getElementById('calculateBtn');
+
+    const displayWeight = document.getElementById('displayWeight');
+    const displayBMI = document.getElementById('displayBMI');
+    const displayBMR = document.getElementById('displayBMR');
+    const displayTDEE = document.getElementById('displayTDEE');
+    const displayTargetLoss = document.getElementById('displayTargetLoss');
+    const displayTargetCalories = document.getElementById('displayTargetCalories');
+    
+    const HEIGHT_CM = 175;
+    const AGE = 28;
+    const ACTIVITY_MULTIPLIER = 1.375;
+    const SNACK_CALORIES = 492;
+
+    function calculateBMR(weight) {
+        // Mifflin-St Jeor Equation
+        return Math.round((10 * weight) + (6.25 * HEIGHT_CM) - (5 * AGE) + 5);
+    }
+
+    function calculateAll() {
+        const weight = parseFloat(weightInput.value);
+        let targetLoss = parseFloat(lossInput.value);
+
+        if (isNaN(weight) || isNaN(targetLoss)) return;
+
+        const bmr = calculateBMR(weight);
+        const tdee = Math.round(bmr * ACTIVITY_MULTIPLIER);
+        
+        let dailyDeficit = Math.round(targetLoss * 7700 / 7);
+        let targetIntake = tdee - dailyDeficit;
+
+        if (targetIntake < 1200) {
+            targetIntake = 1200;
+            dailyDeficit = tdee - targetIntake;
+            targetLoss = (dailyDeficit * 7) / 7700;
+            lossInput.value = targetLoss.toFixed(2);
+        }
+
+        displayWeight.textContent = weight;
+        displayBMI.textContent = (weight / ((HEIGHT_CM/100) * (HEIGHT_CM/100))).toFixed(1);
+        displayBMR.textContent = bmr;
+        displayTDEE.textContent = tdee;
+        displayTargetLoss.textContent = targetLoss.toFixed(2);
+        displayTargetCalories.textContent = targetIntake;
+
+        updateAllMeals(targetIntake);
+    }
+
+    function updateAllMeals(targetIntake) {
+        const mainMealsTargetCalories = targetIntake - SNACK_CALORIES;
+        
+        let originalBreakfastTotal = 0;
+        allMeals.breakfast.forEach(m => m.ingredients.forEach(i => originalBreakfastTotal += i.calories));
+        const avgOriginalBreakfast = originalBreakfastTotal / allMeals.breakfast.length;
+
+        let originalDinnerTotal = 0;
+        allMeals.dinner.forEach(m => m.ingredients.forEach(i => originalDinnerTotal += i.calories));
+        const avgOriginalDinner = originalDinnerTotal / allMeals.dinner.length;
+
+        const breakfastTarget = (avgOriginalBreakfast / (avgOriginalBreakfast + avgOriginalDinner)) * mainMealsTargetCalories;
+        const dinnerTarget = (avgOriginalDinner / (avgOriginalBreakfast + avgOriginalDinner)) * mainMealsTargetCalories;
+        
+        const avgBreakfastTarget = breakfastTarget;
+        const avgDinnerTarget = dinnerTarget;
+
+        document.querySelectorAll('#breakfast-options .printable-section').forEach(meal => {
+            const originalMealCal = parseFloat(meal.dataset.originalCalories);
+            const factor = avgBreakfastTarget / originalMealCal;
+            updateSingleMeal(meal, factor);
+        });
+
+        document.querySelectorAll('#dinner-options .printable-section').forEach(meal => {
+            const originalMealCal = parseFloat(meal.dataset.originalCalories);
+            const factor = avgDinnerTarget / originalMealCal;
+            updateSingleMeal(meal, factor);
+        });
+    }
+
+    function updateSingleMeal(mealElement, factor) {
+        let currentMealTotalCalories = 0;
+        let totalProtein = 0, totalFat = 0, totalCarbs = 0, totalFiber = 0;
+        const ingredientList = mealElement.querySelector('.ingredient-list');
+        const originalIngredients = allMeals.breakfast.find(m => m.name === mealElement.dataset.mealName)?.ingredients || allMeals.dinner.find(m => m.name === mealElement.dataset.mealName)?.ingredients;
+        
+        ingredientList.innerHTML = ''; // Clear previous content
+
+        originalIngredients.forEach(ingData => {
+            let newGrams = ingData.baseGrams * factor;
+            let newCalories = ingData.calories * factor;
+            
+            if (ingData.isCarb) {
+                newGrams = 50;
+                newCalories = (50 / ingData.baseGrams) * ingData.calories;
+            }
+
+            const gramFactor = newGrams / ingData.baseGrams;
+            const p = (ingData.p || 0) * gramFactor;
+            const f = (ingData.f || 0) * gramFactor;
+            const c = (ingData.c || 0) * gramFactor;
+            const fi = (ingData.fi || 0) * gramFactor;
+
+            const li = document.createElement('li');
+            li.innerHTML = `${ingData.emoji} <strong>${ingData.name}</strong> (${Math.round(newGrams)} گرم): ~${Math.round(newCalories)} ک | پ: ${p.toFixed(1)} | چ: ${f.toFixed(1)} | ک: ${c.toFixed(1)} | ف: ${fi.toFixed(1)}`;
+            ingredientList.appendChild(li);
+
+            currentMealTotalCalories += newCalories;
+            totalProtein += p;
+            totalFat += f;
+            totalCarbs += c;
+            totalFiber += fi;
+        });
+
+        mealElement.querySelector('.meal-calories').textContent = Math.round(currentMealTotalCalories);
+        mealElement.querySelector('.meal-macros-summary').innerHTML = `| پ: ${totalProtein.toFixed(1)} | چ: ${totalFat.toFixed(1)} | ک: ${totalCarbs.toFixed(1)} | ف: ${totalFiber.toFixed(1)}`;
+    }
+
+    calculateBtn.addEventListener('click', calculateAll);
+
+    // Initial calculation on page load
+    calculateAll();
+</script>
+
 </body>
 </html>
-�
