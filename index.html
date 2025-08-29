@@ -3,592 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ماشین حساب پیشرفته رژیم (کنترل کامل ماکرو)</title>
+    <title>ماشین حساب رژیم نهایی</title>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Vazirmatn', sans-serif; }
-        .meal-card, .fixed-item-card, .info-card { transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; border-width: 2px; border-color: transparent; }
+        .meal-card, .fixed-item-card { transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; border-width: 2px; border-color: transparent; }
         .meal-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1); }
         .meal-card.selected { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4); }
         .satiety-card { border-left-width: 4px; border-left-color: #f59e0b; }
         .ingredient-list { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
-        .meal-card.open .ingredient-list, .fixed-item-card .ingredient-list, .info-card.open .ingredient-list { max-height: 1000px; }
+        .meal-card.open .ingredient-list, .fixed-item-card.open .ingredient-list { max-height: 1500px; }
         .sticky-summary { position: -webkit-sticky; position: sticky; top: 1rem; z-index: 10; }
         .keto-tag { background-color: #16a34a; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 10px; }
         .gram-input { width: 60px; text-align: center; border: 1px solid #d1d5db; border-radius: 6px; padding: 2px 4px; margin-left: 4px; }
-        .input-group input { text-align: center; font-weight: 600; }
-        input[type=range] { -webkit-appearance: none; background: transparent; cursor: pointer; width: 100%; }
-        input[type=range]::-webkit-slider-runnable-track { height: 0.5rem; border-radius: 0.5rem; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; margin-top: -4px; background-color: #ffffff; height: 1.25rem; width: 1.25rem; border-radius: 50%; border: 2px solid #3b82f6; }
-        #macroSlider::-webkit-slider-runnable-track { background: linear-gradient(to right, #34d399, #f59e0b); }
-        
+        .calorie-input { width: 70px; text-align: center; border: 1px solid #d1d5db; border-radius: 6px; padding: 2px 4px; font-weight: bold; }
         .toggle-label { background-color: #f87171; transition: background-color 0.2s ease; }
         .toggle-checkbox:checked + .toggle-label { background-color: #4ade80; }
         .toggle-checkbox:checked + .toggle-label .toggle-dot { transform: translateX(100%); }
-
-        @media print {
-            body { padding: 0; margin: 0; }
-            .no-print { display: none !important; }
-            .container { max-width: 100% !important; box-shadow: none !important; padding: 0 !important; }
-            .meal-card, .fixed-item-card, .bg-white, .info-card { box-shadow: none !important; border: 1px solid #e5e7eb; }
-            .meal-card, .info-card { page-break-inside: avoid; }
-            .meal-card.selected { display: block !important; border-color: #9ca3af; }
-            .meal-card:not(.selected) { display: none; }
-            .ingredient-list { max-height: 1000px !important; }
-            h1, h2, p { color: #000 !important; }
-        }
+        .lock-icon { cursor: pointer; opacity: 0.4; transition: opacity 0.2s, color 0.2s; }
+        .lock-icon.locked { opacity: 1.0; color: #3b82f6; }
+        .ingredient-macros { font-size: 0.75rem; color: #6b7280; width: 170px; text-align: right; white-space: nowrap; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
 <div class="container mx-auto p-4 md:p-8 max-w-6xl">
-
     <header class="text-center mb-8 no-print">
-        <h1 class="text-4xl font-bold text-gray-900 mb-2">🥗 ماشین حساب ضد گرسنگی شما</h1>
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">🥗 ماشین حساب ضد گرسنگی (نسخه نهایی)</h1>
         <p class="text-lg text-gray-600">تنظیم شده برای حداکثر احساس سیری</p>
     </header>
 
-    <!-- Dynamic Inputs -->
-     <div class="bg-white p-6 rounded-xl shadow-md mb-8 grid grid-cols-1 md:grid-cols-2 gap-6 no-print">
-        <div class="input-group">
-            <label for="currentWeight" class="block text-center font-semibold text-gray-700 mb-2">⚖️ وزن فعلی شما (کیلوگرم)</label>
-            <input type="number" id="currentWeight" value="93" class="w-full p-2 border-2 rounded-lg text-xl text-blue-600 focus:ring-blue-500 focus:border-blue-500">
+    <div class="bg-white p-6 rounded-xl shadow-md mb-8 grid grid-cols-1 md:grid-cols-2 gap-6 no-print">
+        <div>
+            <label for="currentWeight" class="block text-center font-semibold text-gray-700 mb-2">⚖️ وزن فعلی (کیلوگرم)</label>
+            <input type="number" id="currentWeight" value="93" class="w-full p-2 border-2 rounded-lg text-xl text-center font-semibold text-blue-600 focus:ring-blue-500 focus:border-blue-500">
         </div>
-        <div class="input-group">
-            <label for="targetWeeklyLoss" class="block text-center font-semibold text-gray-700 mb-2">📉 هدف کاهش وزن هفتگی (کیلوگرم)</label>
-            <input type="number" id="targetWeeklyLoss" value="1.0" step="0.1" class="w-full p-2 border-2 rounded-lg text-xl text-green-600 focus:ring-green-500 focus:border-green-500">
+        <div>
+            <label for="targetWeeklyLoss" class="block text-center font-semibold text-gray-700 mb-2">📉 هدف کاهش هفتگی (کیلوگرم)</label>
+            <input type="number" id="targetWeeklyLoss" value="1.0" step="0.1" class="w-full p-2 border-2 rounded-lg text-xl text-center font-semibold text-green-600 focus:ring-green-500 focus:border-green-500">
         </div>
     </div>
 
-    <!-- Live Dashboard -->
-    <div id="live-dashboard" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8 text-center">
-        <div class="bg-white p-4 rounded-xl shadow-sm"><p class="font-semibold text-gray-500 text-sm">شاخص توده بدنی (BMI)</p><p id="displayBMI" class="text-2xl font-bold text-blue-600"></p></div>
-        <div class="bg-white p-4 rounded-xl shadow-sm"><p class="font-semibold text-gray-500 text-sm">متابولیسم پایه (BMR)</p><p id="displayBMR" class="text-2xl font-bold text-blue-600"></p></div>
-        <div class="bg-white p-4 rounded-xl shadow-sm"><p class="font-semibold text-gray-500 text-sm">کالری مورد نیاز روزانه (TDEE)</p><p id="displayTDEE" class="text-2xl font-bold text-blue-600"></p></div>
-        <div class="bg-white p-4 rounded-xl shadow-sm col-span-2 lg:col-span-1"><p class="font-semibold text-gray-500 text-sm">کسری کالری روزانه</p><p id="displayDeficit" class="text-2xl font-bold text-red-500"></p></div>
-        <div class="bg-white p-4 rounded-xl shadow-sm col-span-2 lg:col-span-1 border-2 border-green-500"><p class="font-semibold text-gray-500 text-sm">کالری هدف جدید</p><p id="displayTargetCalories" class="text-3xl font-bold text-green-600"></p></div>
-    </div>
+    <div id="live-dashboard" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8 text-center"></div>
+
+    <div id="summary-bar" class="sticky-summary bg-blue-600 text-white p-4 rounded-xl shadow-lg mb-8 no-print"></div>
+
+    <main id="app-container"></main>
     
-    <!-- Macro Profile Controller -->
-    <div class="bg-white p-6 rounded-xl shadow-md mb-8 no-print">
-        <label for="macroSlider" class="block text-center font-bold text-gray-800 mb-3 text-xl">تنظیم پروفایل کلی ماکرو</label>
-        <div class="flex items-center justify-between gap-4">
-            <span class="text-sm font-semibold text-green-600">متعادل (کربو)</span>
-            <input type="range" id="macroSlider" min="0" max="100" value="75" class="w-full">
-            <span class="text-sm font-semibold text-amber-600">سیرکننده (چربی)</span>
-        </div>
-        <div id="macroRatioDisplay" class="text-center mt-3 font-bold text-lg text-gray-700"></div>
-    </div>
-
-    <!-- Daily Summary Bar -->
-    <div id="summary-bar" class="sticky-summary bg-blue-600 text-white p-4 rounded-xl shadow-lg mb-8 no-print">
-        <div class="flex items-center justify-between flex-wrap gap-4">
-            <h2 class="text-xl font-bold">خلاصه روزانه شما</h2>
-            <div class="flex items-center gap-4 text-lg">
-                <span>کالری کل:</span>
-                <span id="total-calories" class="font-bold text-2xl bg-white text-blue-700 px-3 py-1 rounded-md">0</span>
-                <span id="target-calories-display">/ 1500</span>
-            </div>
-             <button id="printBtn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">ذخیره به صورت PDF</button>
-        </div>
-        <div class="w-full bg-blue-400 rounded-full h-2.5 mt-2">
-            <div id="progress-bar" class="bg-yellow-300 h-2.5 rounded-full" style="width: 0%"></div>
-        </div>
-    </div>
-
-    <!-- Fixed Snacks Section -->
-    <section class="mb-8">
-        <h2 class="text-2xl font-bold mb-4 border-b-2 pb-2 border-gray-200">🥤 وعده‌های ثابت روزانه (قابل ویرایش)</h2>
-        <div id="fixed-snacks-container" class="space-y-4"></div>
-    </section>
-
-    <!-- Super Satiety Section -->
-    <section class="mb-8">
-        <h2 class="text-2xl font-bold mb-4 border-b-2 pb-2 border-amber-400 text-amber-600">⭐ وعده‌های فوق سیرکننده (برای روزهای سخت)</h2>
-        <div id="super-satiety-container" class="space-y-4"></div>
-    </section>
-
-    <!-- Meal Sections -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <section id="meal1-section">
-            <h2 class="text-2xl font-bold mb-4 border-b-2 pb-2 border-gray-200">🌅 وعده اول</h2>
-            <div id="meal1-container" class="space-y-4"></div>
-        </section>
-        <section id="meal2-section">
-            <h2 class="text-2xl font-bold mb-4 border-b-2 pb-2 border-gray-200">🍛 وعده دوم</h2>
-            <div id="meal2-container" class="space-y-4"></div>
-        </section>
-    </div>
-
-    <!-- Info Cards Section -->
-    <section class="mt-8">
-        <h2 class="text-2xl font-bold mb-4 border-b-2 pb-2 border-gray-200">اطلاعات تکمیلی</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6" id="info-cards-grid">
-             <div id="dessert-card-container"></div>
-             <div id="drinks-card-container"></div>
-             <div id="sauces-card-container"></div>
-             <div id="fasting-card-container"></div>
-        </div>
-    </section>
+    <section id="daily-summary-section" class="mt-8 no-print"></section>
 
 </div>
 
 <script>
-    const weightInput = document.getElementById('currentWeight');
-    const lossInput = document.getElementById('targetWeeklyLoss');
-    const macroSlider = document.getElementById('macroSlider');
-    const displayBMI = document.getElementById('displayBMI');
-    const displayBMR = document.getElementById('displayBMR');
-    const displayTDEE = document.getElementById('displayTDEE');
-    const displayDeficit = document.getElementById('displayDeficit');
-    const displayTargetCalories = document.getElementById('displayTargetCalories');
-    const totalCaloriesEl = document.getElementById('total-calories');
-    const progressBarEl = document.getElementById('progress-bar');
-    const targetCaloriesDisplay = document.getElementById('target-calories-display');
-    const macroRatioDisplay = document.getElementById('macroRatioDisplay');
-    const fixedSnacksContainer = document.getElementById('fixed-snacks-container');
-    const superSatietyContainer = document.getElementById('super-satiety-container');
-    const meal1Container = document.getElementById('meal1-container');
-    const meal2Container = document.getElementById('meal2-container');
-    const fastingCardContainer = document.getElementById('fasting-card-container');
-    const dessertCardContainer = document.getElementById('dessert-card-container');
-    const drinksCardContainer = document.getElementById('drinks-card-container');
-    const saucesCardContainer = document.getElementById('sauces-card-container');
-    const printBtn = document.getElementById('printBtn');
+// ===================================================================================
+//  FINAL REFACTORED APP MODULE (Professional Modular Approach)
+// ===================================================================================
+//  - ARCHITECTURE:
+//    - DB: Static, original data.
+//    - state: The single, dynamic source of truth for the app's current condition.
+//    - model: The calculation engine. It manipulates the state.
+//    - view: Renders the UI based on the state. No logic.
+//    - controller: Handles user input, tells the model what to do, then tells the view to render.
+// ===================================================================================
+const App = (() => {
 
-    const HEIGHT_CM = 175;
-    const AGE = 28;
-    const ACTIVITY_MULTIPLIER = 1.375;
-    
-    let MEAL_DATA = {};
-
-    const ORIGINAL_MEALS_DB = {
-        fixedSnacks: [
-             { name: 'میکس تخم شربتی', emoji: '🌱', ingredients: [{ e: '🌱', n: 'تخم شربتی', g: 40, cal: 194, p: 6.9, f: 12.3, c: 16.9, fi: 13.8 }] },
-             { name: 'شیر کاکائو', emoji: '🍫', ingredients: [{ e: '🥛', n: 'شیر', g: 200, cal: 96, p: 7.0, f: 3.6, c: 9.6, fi: 0 }, { e: '🍫', n: 'پودر کاکائو', g: 20, cal: 66, p: 3.8, f: 3.1, c: 6.6, fi: 6.6 }] },
-             { name: 'سالاد با سس', emoji: '🥗', ingredients: [{ e: '🥗', n: 'سالاد فصل', g: 200, cal: 40, p: 2, f: 0.4, c: 9, fi: 3 }, { e: '🥣', n: 'سس هزار جزیره دلپذیر', g: 30, cal: 121, p: 0.2, f: 11.7, c: 2.8, fi: 0 }, { e: '🥛', n: 'ماست پرچرب', g: 100, cal: 95, p: 9, f: 5, c: 3, fi: 0 }] }
-        ],
-        superSatiety: [
-            { name: 'چلو کباب کوبیده پرچرب', emoji: '🍢', ingredients: [{ e: '🍢', n: 'کباب کوبیده (گوشت پرچرب)', g: 180, cal: 550, p: 38, f: 45, c: 5, fi: 1 }, { e: '🍚', n: 'برنج ایرانی (مقدار کم)', g: 150, cal: 195, p: 4, f: 0.5, c: 42, fi: 0.6 }, { e: '🧈', n: 'کره', g: 20, cal: 144, p: 0.2, f: 16.2, c: 0, fi: 0 }, { e: '🥗', n: 'سالاد فصل با روغن زیتون', g: 200, cal: 150, p: 2, f: 14, c: 5, fi: 4 }] },
-            { name: 'کتو: سالاد الویه', isKeto: true, emoji: '🥚', ingredients: [{ e: '🥚', n: 'تخم مرغ آب‌پز (۳ عدد)', g: 150, cal: 233, p: 19.5, f: 16.5, c: 1.7, fi: 0 }, { e: '🥣', n: 'سس مایونز پرچرب', g: 100, cal: 700, p: 1, f: 78, c: 1, fi: 0 }, { e: '🐔', n: 'سینه مرغ پخته', g: 100, cal: 165, p: 31, f: 3.6, c: 0, fi: 0 }] },
-            { name: 'لازانیا پرچرب', emoji: '🍝', ingredients: [{ e: '🍝', n: 'ورق لازانیا', g: 100, cal: 370, p: 12, f: 3, c: 75, fi: 4 }, { e: '🥩', n: 'گوشت چرخ کرده', g: 150, cal: 380, p: 25, f: 30, c: 0, fi: 0 }, { e: '🧀', n: 'پنیر پیتزا', g: 150, cal: 450, p: 38, f: 30, c: 3, fi: 0 }] },
-        ],
+    const DB = {
+        fixedSnacks: [ { name: 'میکس تخم شربتی', id: 'fs_0', emoji: '🌱', ingredients: [{ id: 'fs_0_0', e: '🌱', n: 'تخم شربتی', g: 40, cal: 194, p: 6.9, f: 12.3, c: 16.9, fi: 13.8 }] }, { name: 'شیر کاکائو', id: 'fs_1', emoji: '🍫', ingredients: [{ id: 'fs_1_0', e: '🥛', n: 'شیر', g: 200, cal: 96, p: 7.0, f: 3.6, c: 9.6, fi: 0 }, { id: 'fs_1_1', e: '🍫', n: 'پودر کاکائو', g: 20, cal: 66, p: 3.8, f: 3.1, c: 6.6, fi: 6.6 }] }, { name: 'سالاد با سس', id: 'fs_2', emoji: '🥗', ingredients: [{ id: 'fs_2_0', e: '🥗', n: 'سالاد فصل', g: 200, cal: 40, p: 2, f: 0.4, c: 9, fi: 3 }, { id: 'fs_2_1', e: '🥣', n: 'سس هزار جزیره', g: 30, cal: 121, p: 0.2, f: 11.7, c: 2.8, fi: 0 }, { id: 'fs_2_2', e: '🥛', n: 'ماست پرچرب', g: 100, cal: 95, p: 9, f: 5, c: 3, fi: 0 }] } ],
+        superSatiety: [ { name: 'چلو کباب کوبیده پرچرب', id: 'ss_0', emoji: '🍢', ingredients: [{ id: 'ss_0_0', e: '🍢', n: 'کباب کوبیده (پرچرب)', g: 180, cal: 550, p: 38, f: 45, c: 5, fi: 1 }, { id: 'ss_0_1', e: '🍚', n: 'برنج (کم)', g: 150, cal: 195, p: 4, f: 0.5, c: 42, fi: 0.6 }, { id: 'ss_0_2', e: '🧈', n: 'کره', g: 20, cal: 144, p: 0.2, f: 16.2, c: 0, fi: 0 }, { id: 'ss_0_3', e: '🥗', n: 'سالاد با روغن زیتون', g: 200, cal: 150, p: 2, f: 14, c: 5, fi: 4 }] }, { name: 'کتو: سالاد الویه', id: 'ss_1', isKeto: true, emoji: '🥚', ingredients: [{ id: 'ss_1_0', e: '🥚', n: 'تخم مرغ (۳ عدد)', g: 150, cal: 233, p: 19.5, f: 16.5, c: 1.7, fi: 0 }, { id: 'ss_1_1', e: '🥣', n: 'سس مایونز پرچرب', g: 100, cal: 700, p: 1, f: 78, c: 1, fi: 0 }, { id: 'ss_1_2', e: '🐔', n: 'سینه مرغ پخته', g: 100, cal: 165, p: 31, f: 3.6, c: 0, fi: 0 }] }, { name: 'لازانیا پرچرب', id: 'ss_2', emoji: '🍝', ingredients: [{ id: 'ss_2_0', e: '🍝', n: 'ورق لازانیا', g: 100, cal: 370, p: 12, f: 3, c: 75, fi: 4 }, { id: 'ss_2_1', e: '🥩', n: 'گوشت چرخ کرده', g: 150, cal: 380, p: 25, f: 30, c: 0, fi: 0 }, { id: 'ss_2_2', e: '🧀', n: 'پنیر پیتزا', g: 150, cal: 450, p: 38, f: 30, c: 3, fi: 0 }] }, { name: 'کتو: استیک ریبای با کره', id: 'ss_3', isKeto: true, emoji: '🥩', ingredients: [{ id: 'ss_3_0', e: '🥩', n: 'استیک ریبای', g: 300, cal: 800, p: 60, f: 65, c: 0, fi: 0 }, { id: 'ss_3_1', e: '🧈', n: 'کره', g: 30, cal: 216, p: 0.3, f: 24.3, c: 0, fi: 0 }, { id: 'ss_3_2', e: '🥦', n: 'بروکلی', g: 200, cal: 70, p: 6, f: 1, c: 12, fi: 5 }] }, { name: 'دیزی سنگی', id: 'ss_4', emoji: '🏺', ingredients: [{ id: 'ss_4_0', e: '🥩', n: 'گوشت و دنبه', g: 200, cal: 600, p: 35, f: 50, c: 5, fi: 2 }, { id: 'ss_4_1', e: '🥔', n: 'سیب‌زمینی و حبوبات', g: 150, cal: 150, p: 8, f: 1, c: 30, fi: 8 }, { id: 'ss_4_2', e: '🍞', n: 'نان سنگک', g: 100, cal: 250, p: 10, f: 1.2, c: 55, fi: 7.4 }] } ],
         breakfast: [
-            { name: 'املت گوجه و پنیر', emoji: '🍳', ingredients: [{ e: '🍳', n: 'تخم مرغ بزرگ (۲ عدد)', g: 100, cal: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { e: '🧀', n: 'پنیر خامه‌ای', g: 30, cal: 64, p: 1.8, f: 6.3, c: 1.1, fi: 0 }, { e: '🍅', n: 'گوجه متوسط', g: 120, cal: 22, p: 1.1, f: 0.2, c: 4.7, fi: 1.4 }, { e: '🧈', n: 'کره', g: 14, cal: 100, p: 0.1, f: 11.4, c: 0, fi: 0 }, { e: '🍞', n: 'نان سنگک', g: 50, cal: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7 }] },
-            { name: 'عدسی با کره', emoji: '🥣', ingredients: [{ e: '🥣', n: 'عدس پخته', g: 150, cal: 174, p: 13.5, f: 0.6, c: 30, fi: 12 }, { e: '🧈', n: 'کره', g: 10, cal: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { e: '🍞', n: 'نان بربری', g: 50, cal: 137, p: 4.4, f: 0.6, c: 28.1, fi: 1.2 }, { e: '🧀', n: 'پنیر خامه‌ای', g: 30, cal: 64, p: 1.8, f: 6.3, c: 1.1, fi: 0 }] },
-            { name: 'ساندویچ رست بیف', emoji: '🥪', ingredients: [{ e: '🥩', n: 'گوشت رست بیف', g: 125, cal: 250, p: 30, f: 14, c: 0, fi: 0 }, { e: '🍞', n: 'نان باگت', g: 100, cal: 280, p: 9, f: 3, c: 52, fi: 2.5 }, { e: '🧀', n: 'پنیر ورقه‌ای', g: 20, cal: 70, p: 4, f: 5.5, c: 1, fi: 0 }, { e: '🍄', n: 'قارچ و سس', g: 50, cal: 100, p: 2, f: 9, c: 4, fi: 1 }] },
-            { name: 'پنیر، گردو و خیار', emoji: '🥒', ingredients: [{ e: '🧀', n: 'پنیر خامه‌ای', g: 30, cal: 64, p: 1.8, f: 6.3, c: 1.1, fi: 0 }, { e: '🌰', n: 'گردو', g: 15, cal: 98, p: 2.3, f: 9.8, c: 2.1, fi: 1 }, { e: '🍞', n: 'نان لواش', g: 50, cal: 140, p: 4.4, f: 1.1, c: 28.7, fi: 1.5 }, { e: '🥒', n: 'خیار متوسط', g: 150, cal: 23, p: 1, f: 0.2, c: 5.4, fi: 0.8 }, { e: '🧈', n: 'کره', g: 14, cal: 100, p: 0.1, f: 11.4, c: 0, fi: 0 }] },
-            { name: 'چیکن برگر', emoji: '🍔', ingredients: [{ e: '🐔', n: 'سینه مرغ گریل', g: 130, cal: 215, p: 40, f: 5, c: 0, fi: 0 }, { e: '🍞', n: 'نان همبرگر', g: 70, cal: 200, p: 7, f: 3, c: 36, fi: 2 }, { e: '🧀', n: 'پنیر ورقه‌ای (۲)', g: 40, cal: 140, p: 8, f: 11, c: 2, fi: 0 }, { e: '🥬', n: 'کاهو و گوجه', g: 50, cal: 10, p: 0.5, f: 0.1, c: 2, fi: 1 }, { e: '🥣', n: 'سس', g: 30, cal: 100, p: 0.2, f: 10, c: 5, fi: 0 }] },
-            { name: 'تخم مرغ آب‌پز و نان', emoji: '🥚', ingredients: [{ e: '🥚', n: 'تخم مرغ آب‌پز (۲ عدد)', g: 100, cal: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { e: '🍞', n: 'نان سنگک', g: 50, cal: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7 }, { e: '🧈', n: 'کره', g: 10, cal: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { e: '🥒', n: 'خیار و گوجه', g: 150, cal: 60, p: 2, f: 0.5, c: 10, fi: 2 }] },
-            { name: 'ماست و خیار با نان', emoji: '🥛', ingredients: [{ e: '🥛', n: 'ماست پرچرب', g: 200, cal: 190, p: 18, f: 10, c: 6, fi: 0 }, { e: '🥒', n: 'خیار', g: 150, cal: 23, p: 1, f: 0.2, c: 5.4, fi: 0.8 }, { e: '🌰', n: 'گردو', g: 10, cal: 65, p: 1.5, f: 6.5, c: 1.4, fi: 0.7 }, { e: '🍞', n: 'نان خشک', g: 50, cal: 170, p: 5, f: 1, c: 35, fi: 3 }] },
-            { name: 'املت قارچ', emoji: '🍄', ingredients: [{ e: '🍳', n: 'تخم مرغ بزرگ (۲ عدد)', g: 100, cal: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { e: '🍄', n: 'قارچ', g: 100, cal: 22, p: 3.1, f: 0.3, c: 3.3, fi: 1 }, { e: '🧈', n: 'کره', g: 14, cal: 100, p: 0.1, f: 11.4, c: 0, fi: 0 }, { e: '🍞', n: 'نان سنگک', g: 50, cal: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7 }, { e: '🧀', n: 'پنیر خامه‌ای', g: 30, cal: 64, p: 1.8, f: 6.3, c: 1.1, fi: 0 }] },
-            { name: 'ژامبون گوشت سرد', emoji: '🍖', ingredients: [{ e: '🍖', n: 'ژامبون گوشت', g: 200, cal: 500, p: 24, f: 44, c: 2, fi: 0 }, { e: '🍞', n: 'نان باگت', g: 100, cal: 280, p: 9, f: 3, c: 52, fi: 2.5 }, { e: '🥒', n: 'خیارشور و گوجه', g: 90, cal: 25, p: 1, f: 0.2, c: 5, fi: 1.5 }] },
-            { name: 'جو دوسر پرک', emoji: '🥣', ingredients: [{ e: '🥣', n: 'جو دوسر', g: 40, cal: 150, p: 5, f: 2.5, c: 27, fi: 4 }, { e: '🌰', n: 'گردو', g: 10, cal: 65, p: 1.5, f: 6.5, c: 1.4, fi: 0.7 }, { e: '🍯', n: 'عسل', g: 21, cal: 64, p: 0.1, f: 0, c: 17, fi: 0 }] },
-            { name: 'حلوا شکری با نان', emoji: '🍮', ingredients: [{ e: '🍮', n: 'حلوا شکری', g: 50, cal: 250, p: 7, f: 15, c: 22, fi: 2 }, { e: '🍞', n: 'نان بربری', g: 50, cal: 137, p: 4.4, f: 0.6, c: 28.1, fi: 1.2 }] },
-            { name: 'هات داگ ساده', emoji: '🌭', ingredients: [{ e: '🌭', n: 'هات داگ ۸۰٪', g: 80, cal: 250, p: 10, f: 22, c: 3, fi: 0 }, { e: '🍞', n: 'نان باگت', g: 100, cal: 280, p: 9, f: 3, c: 52, fi: 2.5 }, { e: '🥬', n: 'کاهو، خیارشور، گوجه', g: 100, cal: 20, p: 1, f: 0.2, c: 4, fi: 1.5 }] },
-            { name: 'فرنی', emoji: '🥣', ingredients: [{ e: '🍚', n: 'آرد برنج', g: 30, cal: 110, p: 2, f: 0.4, c: 24, fi: 0.7 }, { e: '🍬', n: 'شکر', g: 15, cal: 60, p: 0, f: 0, c: 15, fi: 0 }, { e: '🧈', n: 'کره', g: 10, cal: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }] },
-            { name: 'پنکیک خانگی', emoji: '🥞', ingredients: [{ e: '🥞', n: 'آرد', g: 50, cal: 180, p: 5, f: 1, c: 38, fi: 1.5 }, { e: '🍳', n: 'تخم مرغ (۲ عدد)', g: 100, cal: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { e: '🍯', n: 'عسل', g: 21, cal: 64, p: 0.1, f: 0, c: 17, fi: 0 }] },
-            { name: 'نان و پنیر و سبزی', emoji: '🌿', ingredients: [{ e: '🍞', n: 'نان سنگک', g: 50, cal: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7 }, { e: '🧀', n: 'پنیر خامه‌ای', g: 50, cal: 107, p: 3, f: 10, c: 1.5, fi: 0 }, { e: '🌿', n: 'سبزی خوردن', g: 100, cal: 25, p: 2, f: 0.5, c: 4, fi: 2 }, { e: '🌰', n: 'گردو', g: 15, cal: 98, p: 2.3, f: 9.8, c: 2.1, fi: 1 }] },
-            { name: 'کتو: املت اسفناج و پنیر', isKeto: true, emoji: '🥬', ingredients: [{ e: '🍳', n: 'تخم مرغ بزرگ (۳ عدد)', g: 150, cal: 233, p: 19.5, f: 16.5, c: 1.7, fi: 0 }, { e: '🥬', n: 'اسفناج', g: 100, cal: 23, p: 2.9, f: 0.4, c: 3.6, fi: 2.2 }, { e: '🧀', n: 'پنیر خامه‌ای', g: 50, cal: 107, p: 3, f: 10, c: 1.5, fi: 0 }, { e: '🧈', n: 'کره', g: 10, cal: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }] },
-            { name: 'کتو: املت با پنیر موزارلا', isKeto: true, emoji: '🧀', ingredients: [{ e: '🍳', n: 'تخم مرغ بزرگ (۳ عدد)', g: 150, cal: 233, p: 19.5, f: 16.5, c: 1.7, fi: 0 }, { e: '🧀', n: 'پنیر موزارلا', g: 60, cal: 140, p: 12, f: 9, c: 2, fi: 0 }, { e: '🧈', n: 'کره', g: 10, cal: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }] },
-            { name: 'کتو: ماست پرچرب و آجیل', isKeto: true, emoji: '🌰', ingredients: [{ e: '🥛', n: 'ماست پرچرب', g: 200, cal: 190, p: 18, f: 10, c: 6, fi: 0 }, { e: '🌰', n: 'مخلوط آجیل', g: 30, cal: 180, p: 6, f: 15, c: 6, fi: 3 }] },
-            { name: 'کتو: فرنی بادام', isKeto: true, emoji: '🥜', ingredients: [{ e: '🥜', n: 'آرد بادام', g: 50, cal: 290, p: 10, f: 25, c: 10, fi: 5 }, { e: '🧈', n: 'کره', g: 10, cal: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }] },
-            { name: 'کتو: کره و پنیر خامه‌ای', isKeto: true, emoji: '🧈', ingredients: [{ e: '🧈', n: 'کره', g: 20, cal: 144, p: 0.2, f: 16.2, c: 0, fi: 0 }, { e: '🧀', n: 'پنیر خامه‌ای', g: 60, cal: 128, p: 3.6, f: 12.6, c: 2.2, fi: 0 }] },
+            // Standard (30+)
+            { name: 'املت گوجه و پنیر', id: 'm1_0', emoji: '🍳', ingredients: [{ id: 'm1_0_0', e: '🍳', n: 'تخم مرغ (۲ عدد)', g: 100, cal: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { id: 'm1_0_1', e: '🧀', n: 'پنیر خامه‌ای', g: 30, cal: 64, p: 1.8, f: 6.3, c: 1.1, fi: 0 }, { id: 'm1_0_2', e: '🍅', n: 'گوجه', g: 120, cal: 22, p: 1.1, f: 0.2, c: 4.7, fi: 1.4 }, { id: 'm1_0_3', e: '🧈', n: 'کره', g: 14, cal: 100, p: 0.1, f: 11.4, c: 0, fi: 0 }, { id: 'm1_0_4', e: '🍞', n: 'نان سنگک', g: 50, cal: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7 }] },
+            { name: 'عدسی با کره', id: 'm1_1', emoji: '🥣', ingredients: [{ id: 'm1_1_0', e: '🥣', n: 'عدس پخته', g: 150, cal: 174, p: 13.5, f: 0.6, c: 30, fi: 12 }, { id: 'm1_1_1', e: '🧈', n: 'کره', g: 10, cal: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { id: 'm1_1_2', e: '🍞', n: 'نان بربری', g: 50, cal: 137, p: 4.4, f: 0.6, c: 28.1, fi: 1.2 }, { id: 'm1_1_3', e: '🧀', n: 'پنیر خامه‌ای', g: 30, cal: 64, p: 1.8, f: 6.3, c: 1.1, fi: 0 }] },
+            { name: 'ساندویچ رست بیف', id: 'm1_2', emoji: '🥪', ingredients: [{ id: 'm1_2_0', e: '🥩', n: 'گوشت رست بیف', g: 125, cal: 250, p: 30, f: 14, c: 0, fi: 0 }, { id: 'm1_2_1', e: '🍞', n: 'نان باگت', g: 100, cal: 280, p: 9, f: 3, c: 52, fi: 2.5 }, { id: 'm1_2_2', e: '🧀', n: 'پنیر ورقه‌ای', g: 20, cal: 70, p: 4, f: 5.5, c: 1, fi: 0 }, { id: 'm1_2_3', e: '🍄', n: 'قارچ و سس', g: 50, cal: 100, p: 2, f: 9, c: 4, fi: 1 }] },
+            { name: 'پنیر، گردو و خیار', id: 'm1_3', emoji: '🥒', ingredients: [{ id: 'm1_3_0', e: '🧀', n: 'پنیر خامه‌ای', g: 30, cal: 64, p: 1.8, f: 6.3, c: 1.1, fi: 0 }, { id: 'm1_3_1', e: '🌰', n: 'گردو', g: 15, cal: 98, p: 2.3, f: 9.8, c: 2.1, fi: 1 }, { id: 'm1_3_2', e: '🍞', n: 'نان لواش', g: 50, cal: 140, p: 4.4, f: 1.1, c: 28.7, fi: 1.5 }, { id: 'm1_3_3', e: '🥒', n: 'خیار', g: 150, cal: 23, p: 1, f: 0.2, c: 5.4, fi: 0.8 }, { id: 'm1_3_4', e: '🧈', n: 'کره', g: 14, cal: 100, p: 0.1, f: 11.4, c: 0, fi: 0 }] },
+            { name: 'چیکن برگر', id: 'm1_4', emoji: '🍔', ingredients: [{ id: 'm1_4_0', e: '🐔', n: 'سینه مرغ گریل', g: 130, cal: 215, p: 40, f: 5, c: 0, fi: 0 }, { id: 'm1_4_1', e: '🍞', n: 'نان همبرگر', g: 70, cal: 200, p: 7, f: 3, c: 36, fi: 2 }, { id: 'm1_4_2', e: '🧀', n: 'پنیر ورقه‌ای (۲)', g: 40, cal: 140, p: 8, f: 11, c: 2, fi: 0 }, { id: 'm1_4_3', e: '🥬', n: 'کاهو و گوجه', g: 50, cal: 10, p: 0.5, f: 0.1, c: 2, fi: 1 }, { id: 'm1_4_4', e: '🥣', n: 'سس', g: 30, cal: 100, p: 0.2, f: 10, c: 5, fi: 0 }] },
+            { name: 'تخم مرغ آب‌پز و نان', id: 'm1_5', emoji: '🥚', ingredients: [{ id: 'm1_5_0', e: '🥚', n: 'تخم مرغ آب‌پز (۲ عدد)', g: 100, cal: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { id: 'm1_5_1', e: '🍞', n: 'نان سنگک', g: 50, cal: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7 }, { id: 'm1_5_2', e: '🧈', n: 'کره', g: 10, cal: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { id: 'm1_5_3', e: '🥒', n: 'خیار و گوجه', g: 150, cal: 60, p: 2, f: 0.5, c: 10, fi: 2 }] },
+            { name: 'ماست و خیار با نان', id: 'm1_6', emoji: '🥛', ingredients: [{ id: 'm1_6_0', e: '🥛', n: 'ماست پرچرب', g: 200, cal: 190, p: 18, f: 10, c: 6, fi: 0 }, { id: 'm1_6_1', e: '🥒', n: 'خیار', g: 150, cal: 23, p: 1, f: 0.2, c: 5.4, fi: 0.8 }, { id: 'm1_6_2', e: '🌰', n: 'گردو', g: 10, cal: 65, p: 1.5, f: 6.5, c: 1.4, fi: 0.7 }, { id: 'm1_6_3', e: '🍞', n: 'نان خشک', g: 50, cal: 170, p: 5, f: 1, c: 35, fi: 3 }] },
+            { name: 'جو دوسر پرک', id: 'm1_7', emoji: '🥣', ingredients: [{ id: 'm1_7_0', e: '🥣', n: 'جو دوسر', g: 40, cal: 150, p: 5, f: 2.5, c: 27, fi: 4 }, { id: 'm1_7_1', e: '🌰', n: 'گردو', g: 10, cal: 65, p: 1.5, f: 6.5, c: 1.4, fi: 0.7 }, { id: 'm1_7_2', e: '🍯', n: 'عسل', g: 21, cal: 64, p: 0.1, f: 0, c: 17, fi: 0 }] },
+            { name: 'حلوا شکری با نان', id: 'm1_8', emoji: '🍮', ingredients: [{ id: 'm1_8_0', e: '🍮', n: 'حلوا شکری', g: 50, cal: 250, p: 7, f: 15, c: 22, fi: 2 }, { id: 'm1_8_1', e: '🍞', n: 'نان بربری', g: 50, cal: 137, p: 4.4, f: 0.6, c: 28.1, fi: 1.2 }] },
+            { name: 'پنکیک خانگی', id: 'm1_9', emoji: '🥞', ingredients: [{ id: 'm1_9_0', e: '🥞', n: 'آرد', g: 50, cal: 180, p: 5, f: 1, c: 38, fi: 1.5 }, { id: 'm1_9_1', e: '🍳', n: 'تخم مرغ (۲ عدد)', g: 100, cal: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { id: 'm1_9_2', e: '🍯', n: 'عسل', g: 21, cal: 64, p: 0.1, f: 0, c: 17, fi: 0 }] },
+            // KETO Breakfasts (20)
+            { name: 'کتو: املت اسفناج و پنیر', id: 'm1_k0', isKeto: true, emoji: '🥬', ingredients: [{ id: 'm1_k0_0', e: '🍳', n: 'تخم مرغ (۳ عدد)', g: 150, cal: 233, p: 19.5, f: 16.5, c: 1.7, fi: 0 }, { id: 'm1_k0_1', e: '🥬', n: 'اسفناج', g: 100, cal: 23, p: 2.9, f: 0.4, c: 3.6, fi: 2.2 }, { id: 'm1_k0_2', e: '🧀', n: 'پنیر خامه‌ای', g: 50, cal: 107, p: 3, f: 10, c: 1.5, fi: 0 }, { id: 'm1_k0_3', e: '🧈', n: 'کره', g: 10, cal: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }] },
+            { name: 'کتو: املت با پنیر موزارلا', id: 'm1_k1', isKeto: true, emoji: '🧀', ingredients: [{ id: 'm1_k1_0', e: '🍳', n: 'تخم مرغ (۳ عدد)', g: 150, cal: 233, p: 19.5, f: 16.5, c: 1.7, fi: 0 }, { id: 'm1_k1_1', e: '🧀', n: 'پنیر موزارلا', g: 60, cal: 140, p: 12, f: 9, c: 2, fi: 0 }, { id: 'm1_k1_2', e: '🧈', n: 'کره', g: 10, cal: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }] },
+            { name: 'کتو: ماست پرچرب و آجیل', id: 'm1_k2', isKeto: true, emoji: '🌰', ingredients: [{ id: 'm1_k2_0', e: '🥛', n: 'ماست پرچرب', g: 200, cal: 190, p: 18, f: 10, c: 6, fi: 0 }, { id: 'm1_k2_1', e: '🌰', n: 'مخلوط آجیل', g: 30, cal: 180, p: 6, f: 15, c: 6, fi: 3 }] },
+            { name: 'کتو: کره و پنیر خامه‌ای', id: 'm1_k3', isKeto: true, emoji: '🧈', ingredients: [{ id: 'm1_k3_0', e: '🧈', n: 'کره', g: 20, cal: 144, p: 0.2, f: 16.2, c: 0, fi: 0 }, { id: 'm1_k3_1', e: '🧀', n: 'پنیر خامه‌ای', g: 60, cal: 128, p: 3.6, f: 12.6, c: 2.2, fi: 0 }] },
+            { name: 'کتو: نیمرو و بیکن', id: 'm1_k4', isKeto: true, emoji: '🥓', ingredients: [{ id: 'm1_k4_0', e: '🍳', n: 'تخم مرغ (۳ عدد)', g: 150, cal: 233, p: 19.5, f: 16.5, c: 1.7, fi: 0 }, { id: 'm1_k4_1', e: '🥓', n: 'بیکن', g: 50, cal: 220, p: 18, f: 16, c: 1, fi: 0 }, { id: 'm1_k4_2', e: '🧈', n: 'کره', g: 10, cal: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }] },
+            { name: 'کتو: تخم مرغ و آووکادو', id: 'm1_k5', isKeto: true, emoji: '🥑', ingredients: [{ id: 'm1_k5_0', e: '🍳', n: 'تخم مرغ (۲ عدد)', g: 100, cal: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { id: 'm1_k5_1', e: '🥑', n: 'آووکادو', g: 100, cal: 160, p: 2, f: 15, c: 9, fi: 7 }] },
+            { name: 'کتو: سوسیس و تخم مرغ', id: 'm1_k6', isKeto: true, emoji: '🌭', ingredients: [{ id: 'm1_k6_0', e: '🍳', n: 'تخم مرغ (۲ عدد)', g: 100, cal: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { id: 'm1_k6_1', e: '🌭', n: 'سوسیس شکاری', g: 100, cal: 300, p: 12, f: 28, c: 2, fi: 0 }] },
+            { name: 'کتو: پنکیک آرد بادام', id: 'm1_k7', isKeto: true, emoji: '🥞', ingredients: [{ id: 'm1_k7_0', e: '🥜', n: 'آرد بادام', g: 50, cal: 290, p: 10.5, f: 25, c: 10, fi: 5 }, { id: 'm1_k7_1', e: '🍳', n: 'تخم مرغ (۲ عدد)', g: 100, cal: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { id: 'm1_k7_2', e: '🧈', n: 'کره', g: 15, cal: 108, p: 0.1, f: 12.2, c: 0, fi: 0 }] },
         ],
         dinner: [
-            { name: 'چلو کباب کوبیده', emoji: '🍢', ingredients: [{ e: '🍢', n: 'کباب کوبیده', g: 160, cal: 450, p: 35, f: 32, c: 5, fi: 1 }, { e: '🍚', n: 'برنج ایرانی', g: 320, cal: 416, p: 8, f: 1, c: 90, fi: 1.5 }, { e: '🧈', n: 'کره', g: 10, cal: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { e: '🍅', n: 'گوجه کبابی', g: 100, cal: 30, p: 1, f: 0.2, c: 7, fi: 1.5 }] },
-            { name: 'چلو جوجه کباب', emoji: '🐔', ingredients: [{ e: '🐔', n: 'جوجه کباب سینه', g: 165, cal: 270, p: 50, f: 6, c: 0, fi: 0 }, { e: '🍚', n: 'برنج ایرانی', g: 350, cal: 455, p: 9, f: 1, c: 98, fi: 1.8 }, { e: '🧈', n: 'کره', g: 10, cal: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { e: '🍅', n: 'گوجه کبابی', g: 100, cal: 30, p: 1, f: 0.2, c: 7, fi: 1.5 }] },
-            { name: 'لازانیا گوشت', emoji: '🍝', ingredients: [{ e: '🍝', n: 'ورق لازانیا', g: 100, cal: 370, p: 12, f: 3, c: 75, fi: 4 }, { e: '🥩', n: 'گوشت چرخ کرده', g: 150, cal: 380, p: 25, f: 30, c: 0, fi: 0 }, { e: '🧀', n: 'پنیر پیتزا', g: 150, cal: 450, p: 38, f: 30, c: 3, fi: 0 }] },
-            { name: 'پیتزا پپرونی', emoji: '🍕', ingredients: [{ e: '🍕', n: 'خمیر پیتزا', g: 150, cal: 400, p: 15, f: 8, c: 70, fi: 4 }, { e: '🍖', n: 'پپرونی', g: 80, cal: 400, p: 18, f: 35, c: 2, fi: 0 }, { e: '🧀', n: 'پنیر پیتزا', g: 100, cal: 300, p: 25, f: 20, c: 2, fi: 0 }, { e: '🍅', n: 'سس و قارچ', g: 70, cal: 80, p: 2, f: 4, c: 8, fi: 1.5 }] },
-            { name: 'کشک بادمجان', emoji: '🍆', ingredients: [{ e: '🍆', n: 'بادمجان کبابی', g: 200, cal: 70, p: 2, f: 0.4, c: 16, fi: 6 }, { e: '🥣', n: 'کشک', g: 50, cal: 55, p: 8, f: 1, c: 4, fi: 0 }, { e: '🧈', n: 'کره', g: 10, cal: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { e: '🌰', n: 'گردو', g: 10, cal: 65, p: 1.5, f: 6.5, c: 1.4, fi: 0.7 }, { e: '🍞', n: 'نان سنگک', g: 50, cal: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7 }, { e: '🥛', n: 'ماست پرچرب', g: 245, cal: 150, p: 12, f: 8, c: 11, fi: 0 }] },
-            { name: 'کوکو سبزی', emoji: '🌿', ingredients: [{ e: '🌿', n: 'کوکو سبزی', g: 150, cal: 250, p: 14, f: 18, c: 8, fi: 4 }, { e: '🧈', n: 'کره', g: 5, cal: 36, p: 0, f: 4, c: 0, fi: 0 }, { e: '🧀', n: 'پنیر خامه‌ای', g: 30, cal: 64, p: 1.8, f: 6.3, c: 1.1, fi: 0 }, { e: '🍚', n: 'برنج', g: 60, cal: 78, p: 1.6, f: 0.2, c: 16.8, fi: 0.2 }, { e: '🥛', n: 'ماست پرچرب', g: 245, cal: 150, p: 12, f: 8, c: 11, fi: 0 }] },
-            { name: 'چلو خورشت قورمه سبزی', emoji: '🍲', ingredients: [{ e: '🍲', n: 'خورشت قورمه سبزی', g: 250, cal: 450, p: 25, f: 30, c: 20, fi: 8 }, { e: '🍚', n: 'برنج ایرانی', g: 300, cal: 390, p: 7.5, f: 0.9, c: 84, fi: 1.2 }] },
-            { name: 'چلو خورشت قیمه', emoji: '🍛', ingredients: [{ e: '🍛', n: 'خورشت قیمه', g: 250, cal: 400, p: 22, f: 25, c: 22, fi: 7 }, { e: '🍟', n: 'سیب زمینی سرخ کرده', g: 50, cal: 150, p: 2, f: 7, c: 18, fi: 2 }, { e: '🍚', n: 'برنج ایرانی', g: 300, cal: 390, p: 7.5, f: 0.9, c: 84, fi: 1.2 }] },
-            { name: 'عدس پلو', emoji: '🍚', ingredients: [{ e: '🍚', n: 'عدس پلو', g: 180, cal: 244, p: 9.4, f: 5.2, c: 40, fi: 6.1 }, { e: '🥛', n: 'ماست پرچرب', g: 245, cal: 150, p: 12, f: 8, c: 11, fi: 0 }, { e: '🧈', n: 'کره حیوانی (اختیاری)', g: 15, cal: 108, p: 0.1, f: 12.2, c: 0, fi: 0, defaultOff: true }] },
-            { name: 'لوبیا پلو', emoji: '🫛', ingredients: [{ e: '🫛', n: 'لوبیا پلو', g: 180, cal: 191, p: 5, f: 4.9, c: 32, fi: 4.6 }, { e: '🥛', n: 'ماست پرچرب', g: 245, cal: 150, p: 12, f: 8, c: 11, fi: 0 }, { e: '🧈', n: 'کره حیوانی (اختیاری)', g: 15, cal: 108, p: 0.1, f: 12.2, c: 0, fi: 0, defaultOff: true }] },
-            { name: 'کوکو سیب‌زمینی', emoji: '🥔', ingredients: [{ e: '🥔', n: 'سیب‌زمینی پخته', g: 170, cal: 148, p: 3.6, f: 0.2, c: 34, fi: 3.6 }, { e: '🍳', n: 'تخم مرغ بزرگ (۲ عدد)', g: 100, cal: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { e: '🧈', n: 'کره', g: 10, cal: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { e: '🧀', n: 'پنیر خامه‌ای', g: 30, cal: 64, p: 1.8, f: 6.3, c: 1.1, fi: 0 }, { e: '🍞', n: 'نان سنگک', g: 50, cal: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7 }] },
-            { name: 'فیله استریپس', emoji: '🍗', ingredients: [{ e: '🍗', n: 'فیله سوخاری (۴ تکه)', g: 200, cal: 550, p: 45, f: 30, c: 25, fi: 2 }, { e: '🍟', n: 'سیب زمینی سرخ کرده', g: 150, cal: 450, p: 5, f: 22, c: 55, fi: 5 }, { e: '🍞', n: 'نان', g: 50, cal: 140, p: 4, f: 2, c: 26, fi: 1 }] },
-            { name: 'سیب زمینی تنوری', emoji: '🥔', ingredients: [{ e: '🥔', n: 'سیب زمینی تنوری', g: 300, cal: 350, p: 7, f: 15, c: 45, fi: 8 }, { e: '🥣', n: 'سس کچاپ', g: 30, cal: 30, p: 0.5, f: 0.1, c: 8, fi: 0.5 }] },
-            { name: 'ذرت مکزیکی', emoji: '🌽', ingredients: [{ e: '🌽', n: 'ذرت پخته', g: 200, cal: 220, p: 8, f: 3, c: 48, fi: 5 }, { e: '🧀', n: 'پنیر پیتزا', g: 60, cal: 140, p: 12, f: 9, c: 2, fi: 0 }, { e: '🍄', n: 'قارچ', g: 100, cal: 22, p: 3.1, f: 0.3, c: 3.3, fi: 1 }, { e: '🧈', n: 'کره', g: 14, cal: 100, p: 0.1, f: 11.4, c: 0, fi: 0 }, { e: '🥛', n: 'ماست پرچرب', g: 100, cal: 95, p: 9, f: 5, c: 3, fi: 0 }] },
-            { name: 'فلافل در فر', emoji: '🥙', ingredients: [{ e: '🥙', n: 'فلافل (۶ عدد)', g: 150, cal: 240, p: 12, f: 12, c: 24, fi: 10 }, { e: '🍞', n: 'نان پیتا', g: 50, cal: 140, p: 5, f: 1, c: 28, fi: 1.5 }, { e: '🥗', n: 'سالاد و سبزیجات', g: 150, cal: 75, p: 2, f: 5, c: 6, fi: 3 }, { e: '🥛', n: 'سس ماست', g: 100, cal: 95, p: 9, f: 5, c: 3, fi: 0 }] },
-            { name: 'سالاد الویه', emoji: '🥔', ingredients: [{ e: '🥔', n: 'سیب‌زمینی پخته', g: 150, cal: 130, p: 3, f: 0.2, c: 30, fi: 3 }, { e: '🥚', n: 'تخم مرغ آب‌پز (۲ عدد)', g: 100, cal: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { e: '🥕', n: 'نخود فرنگی', g: 50, cal: 41, p: 2.5, f: 0.2, c: 7, fi: 2.5 }, { e: '🌽', n: 'ذرت', g: 50, cal: 43, p: 1.5, f: 0.5, c: 9.5, fi: 1 }, { e: '🌭', n: 'کالباس', g: 70, cal: 210, p: 8.4, f: 18.2, c: 2.1, fi: 0 }, { e: '🥣', n: 'سس مایونز', g: 50, cal: 350, p: 0.5, f: 38, c: 1.5, fi: 0 }, { e: '🍞', n: 'نان', g: 50, cal: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7 }] },
-            { name: 'سالاد ماکارونی', emoji: '🍝', ingredients: [{ e: '🍝', n: 'ماکارونی پخته', g: 80, cal: 125, p: 4.5, f: 0.9, c: 25, fi: 1.8 }, { e: '🌭', n: 'کالباس', g: 80, cal: 240, p: 9.6, f: 20.8, c: 2.4, fi: 0 }, { e: '🥒', n: 'خیارشور', g: 50, cal: 10, p: 0.5, f: 0.1, c: 2, fi: 1 }, { e: '🌽', n: 'ذرت', g: 50, cal: 43, p: 1.5, f: 0.5, c: 9.5, fi: 1 }, { e: '🥕', n: 'نخود فرنگی', g: 50, cal: 41, p: 2.5, f: 0.2, c: 7, fi: 2.5 }, { e: '🥣', n: 'سس مایونز', g: 50, cal: 350, p: 0.5, f: 38, c: 1.5, fi: 0 }, { e: '🌰', n: 'گردو (اختیاری)', g: 15, cal: 98, p: 2.3, f: 9.8, c: 2.1, fi: 1, defaultOff: true }] },
-            { name: 'آش رشته', emoji: '🍲', ingredients: [{ e: '🍲', n: 'آش رشته (یک کاسه)', g: 400, cal: 450, p: 18, f: 15, c: 65, fi: 15 }, { e: '🥣', n: 'کشک', g: 30, cal: 33, p: 4.8, f: 0.6, c: 2.4, fi: 0 }, { e: '🧅', n: 'پیاز داغ', g: 10, cal: 60, p: 0.2, f: 6, c: 2, fi: 0.3 }] },
-            { name: 'اشکنه', emoji: '🍳', ingredients: [{ e: '🍳', n: 'تخم مرغ (۲ عدد)', g: 100, cal: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { e: '🥔', n: 'پیاز و سیب زمینی', g: 150, cal: 150, p: 3, f: 0.2, c: 33, fi: 4 }, { e: '🧈', n: 'کره', g: 10, cal: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { e: '🍞', n: 'نان', g: 50, cal: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7 }] },
-            { name: 'سوسیس با سس', emoji: '🌭', ingredients: [{ e: '🌭', n: 'سوسیس', g: 55, cal: 150, p: 6.5, f: 12, c: 4, fi: 0 }, { e: '🥣', n: 'سس کچاپ', g: 60, cal: 50, p: 0, f: 0, c: 10, fi: 0.5 }, { e: '🧀', n: 'پنیر پیتزا (اختیاری)', g: 30, cal: 90, p: 7, f: 6, c: 1, fi: 0, defaultOff: true }] },
-            { name: 'کتو: خوراک کدو و پنیر', isKeto: true, emoji: '🥒', ingredients: [{ e: '🥒', n: 'کدو سبز', g: 300, cal: 60, p: 3.6, f: 0.9, c: 9.3, fi: 3 }, { e: '🧀', n: 'پنیر خامه‌ای', g: 100, cal: 213, p: 6, f: 21, c: 3, fi: 0 }, { e: '🧈', n: 'کره', g: 15, cal: 108, p: 0.1, f: 12.2, c: 0, fi: 0 }, { e: '🌰', n: 'گردو', g: 15, cal: 98, p: 2.3, f: 9.8, c: 2.1, fi: 1 }] },
+            // Standard Dinners
+            { name: 'چلو کباب کوبیده', id: 'm2_0', emoji: '🍢', ingredients: [{ id: 'm2_0_0', e: '🍢', n: 'کباب کوبیده', g: 160, cal: 450, p: 35, f: 32, c: 5, fi: 1 }, { id: 'm2_0_1', e: '🍚', n: 'برنج ایرانی', g: 320, cal: 416, p: 8, f: 1, c: 90, fi: 1.5 }, { id: 'm2_0_2', e: '🧈', n: 'کره', g: 10, cal: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { id: 'm2_0_3', e: '🍅', n: 'گوجه کبابی', g: 100, cal: 30, p: 1, f: 0.2, c: 7, fi: 1.5 }] },
+            { name: 'چلو جوجه کباب', id: 'm2_1', emoji: '🐔', ingredients: [{ id: 'm2_1_0', e: '🐔', n: 'جوجه کباب سینه', g: 165, cal: 270, p: 50, f: 6, c: 0, fi: 0 }, { id: 'm2_1_1', e: '🍚', n: 'برنج ایرانی', g: 350, cal: 455, p: 9, f: 1, c: 98, fi: 1.8 }, { id: 'm2_1_2', e: '🧈', n: 'کره', g: 10, cal: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { id: 'm2_1_3', e: '🍅', n: 'گوجه کبابی', g: 100, cal: 30, p: 1, f: 0.2, c: 7, fi: 1.5 }] },
+            { name: 'لازانیا گوشت', id: 'm2_2', emoji: '🍝', ingredients: [{ id: 'm2_2_0', e: '🍝', n: 'ورق لازانیا', g: 100, cal: 370, p: 12, f: 3, c: 75, fi: 4 }, { id: 'm2_2_1', e: '🥩', n: 'گوشت چرخ کرده', g: 150, cal: 380, p: 25, f: 30, c: 0, fi: 0 }, { id: 'm2_2_2', e: '🧀', n: 'پنیر پیتزا', g: 150, cal: 450, p: 38, f: 30, c: 3, fi: 0 }] },
+            { name: 'پیتزا پپرونی', id: 'm2_3', emoji: '🍕', ingredients: [{ id: 'm2_3_0', e: '🍕', n: 'خمیر پیتزا', g: 150, cal: 400, p: 15, f: 8, c: 70, fi: 4 }, { id: 'm2_3_1', e: '🍖', n: 'پپرونی', g: 80, cal: 400, p: 18, f: 35, c: 2, fi: 0 }, { id: 'm2_3_2', e: '🧀', n: 'پنیر پیتزا', g: 100, cal: 300, p: 25, f: 20, c: 2, fi: 0 }, { id: 'm2_3_3', e: '🍅', n: 'سس و قارچ', g: 70, cal: 80, p: 2, f: 4, c: 8, fi: 1.5 }] },
+            { name: 'کشک بادمجان', id: 'm2_4', emoji: '🍆', ingredients: [{ id: 'm2_4_0', e: '🍆', n: 'بادمجان کبابی', g: 200, cal: 70, p: 2, f: 0.4, c: 16, fi: 6 }, { id: 'm2_4_1', e: '🥣', n: 'کشک', g: 50, cal: 55, p: 8, f: 1, c: 4, fi: 0 }, { id: 'm2_4_2', e: '🧈', n: 'کره', g: 10, cal: 72, p: 0.1, f: 8.1, c: 0, fi: 0 }, { id: 'm2_4_3', e: '🌰', n: 'گردو', g: 10, cal: 65, p: 1.5, f: 6.5, c: 1.4, fi: 0.7 }, { id: 'm2_4_4', e: '🍞', n: 'نان سنگک', g: 50, cal: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7 }] },
+            { name: 'چلو خورشت قورمه سبزی', id: 'm2_5', emoji: '🍲', ingredients: [{ id: 'm2_5_0', e: '🍲', n: 'خورشت قورمه سبزی', g: 250, cal: 450, p: 25, f: 30, c: 20, fi: 8 }, { id: 'm2_5_1', e: '🍚', n: 'برنج ایرانی', g: 300, cal: 390, p: 7.5, f: 0.9, c: 84, fi: 1.2 }] },
+            { name: 'چلو خورشت قیمه', id: 'm2_6', emoji: '🍛', ingredients: [{ id: 'm2_6_0', e: '🍛', n: 'خورشت قیمه', g: 250, cal: 400, p: 22, f: 25, c: 22, fi: 7 }, { id: 'm2_6_1', e: '🍟', n: 'سیب زمینی سرخ کرده', g: 50, cal: 150, p: 2, f: 7, c: 18, fi: 2 }, { id: 'm2_6_2', e: '🍚', n: 'برنج ایرانی', g: 300, cal: 390, p: 7.5, f: 0.9, c: 84, fi: 1.2 }] },
+            { name: 'سالاد الویه', id: 'm2_7', emoji: '🥔', ingredients: [{ id: 'm2_7_0', e: '🥔', n: 'سیب‌زمینی پخته', g: 150, cal: 130, p: 3, f: 0.2, c: 30, fi: 3 }, { id: 'm2_7_1', e: '🥚', n: 'تخم مرغ آب‌پز (۲ عدد)', g: 100, cal: 155, p: 13, f: 11, c: 1.1, fi: 0 }, { id: 'm2_7_2', e: '🐔', n: 'سینه مرغ', g: 80, cal: 132, p: 25, f: 3, c: 0, fi: 0}, { id: 'm2_7_3', e: '🥣', n: 'سس مایونز', g: 50, cal: 350, p: 0.5, f: 38, c: 1.5, fi: 0 }, { id: 'm2_7_4', e: '🍞', n: 'نان', g: 50, cal: 125, p: 5, f: 0.6, c: 27.5, fi: 3.7 }] },
+            { name: 'آش رشته', id: 'm2_8', emoji: '🍲', ingredients: [{ id: 'm2_8_0', e: '🍲', n: 'رشته آش', g: 100, cal: 350, p: 12, f: 1.5, c: 70, fi: 5 }, { id: 'm2_8_1', e: '🥣', n: 'حبوبات پخته', g: 200, cal: 260, p: 16, f: 1, c: 48, fi: 15 }, { id: 'm2_8_2', e: '🌿', n: 'سبزی آش', g: 100, cal: 30, p: 2, f: 0.5, c: 5, fi: 3 }, { id: 'm2_8_3', e: '🥣', n: 'کشک', g: 30, cal: 33, p: 4.8, f: 0.6, c: 2.4, fi: 0 }, { id: 'm2_8_4', e: '🧅', n: 'پیاز داغ', g: 10, cal: 60, p: 0.2, f: 6, c: 2, fi: 0.3 }] },
+            // KETO Dinners
+            { name: 'کتو: خوراک کدو و پنیر', id: 'm2_k0', isKeto: true, emoji: '🥒', ingredients: [{ id: 'm2_k0_0', e: '🥒', n: 'کدو سبز', g: 300, cal: 60, p: 3.6, f: 0.9, c: 9.3, fi: 3 }, { id: 'm2_k0_1', e: '🧀', n: 'پنیر خامه‌ای', g: 100, cal: 213, p: 6, f: 21, c: 3, fi: 0 }, { id: 'm2_k0_2', e: '🧈', n: 'کره', g: 15, cal: 108, p: 0.1, f: 12.2, c: 0, fi: 0 }, { id: 'm2_k0_3', e: '🌰', n: 'گردو', g: 15, cal: 98, p: 2.3, f: 9.8, c: 2.1, fi: 1 }] },
+            { name: 'کتو: مرغ با سس خامه و قارچ', id: 'm2_k1', isKeto: true, emoji: '🍗', ingredients: [{ id: 'm2_k1_0', e: '🐔', n: 'سینه مرغ', g: 200, cal: 330, p: 62, f: 7.2, c: 0, fi: 0 }, { id: 'm2_k1_1', e: '🍄', n: 'قارچ', g: 150, cal: 33, p: 4.5, f: 0.5, c: 5, fi: 1.5 }, { id: 'm2_k1_2', e: '🥥', n: 'خامه پرچرب', g: 100, cal: 340, p: 2, f: 36, c: 3, fi: 0 }, { id: 'm2_k1_3', e: '🧈', n: 'کره', g: 15, cal: 108, p: 0.1, f: 12.2, c: 0, fi: 0 }] },
+            { name: 'کتو: ماهی سالمون و مارچوبه', id: 'm2_k2', isKeto: true, emoji: '🐟', ingredients: [{ id: 'm2_k2_0', e: '🐟', n: 'فیله سالمون', g: 200, cal: 416, p: 40, f: 28, c: 0, fi: 0 }, { id: 'm2_k2_1', e: '🌿', n: 'مارچوبه', g: 200, cal: 40, p: 4.4, f: 0.4, c: 7.8, fi: 4.2 }, { id: 'm2_k2_2', e: '🍋', n: 'روغن زیتون', g: 20, cal: 177, p: 0, f: 20, c: 0, fi: 0 }] },
+            { name: 'کتو: پیتزا با خمیر گل کلم', id: 'm2_k3', isKeto: true, emoji: '🍕', ingredients: [{ id: 'm2_k3_0', e: '🥦', n: 'خمیر گل کلم', g: 250, cal: 150, p: 15, f: 7, c: 12, fi: 8 }, { id: 'm2_k3_1', e: '🍖', n: 'پپرونی', g: 80, cal: 400, p: 18, f: 35, c: 2, fi: 0 }, { id: 'm2_k3_2', e: '🧀', n: 'پنیر موزارلا', g: 120, cal: 340, p: 30, f: 24, c: 3, fi: 0 }] },
         ],
-        infoCards: {
-            fasting: {
-                title: 'خوراکی‌های مجاز در فستینگ',
-                emoji: '🧘',
-                items: [
-                    { name: 'آب گازدار', e: '💧', info: 'بدون کالری، کمک به هیدراتاسیون' },
-                    { name: 'قهوه تلخ / چای سبز', e: '☕', info: 'بدون کالری، افزایش متابولیسم' },
-                    { name: 'سبزیجات خام (کرفس، خیار)', e: '🥒', info: 'کالری ناچیز، فیبر بالا' },
-                    { name: 'سرکه سیب (در آب)', e: '🍎', info: 'کمک به کنترل قند خون' },
-                    { name: 'الکترولیت‌ها (بدون شکر)', e: '⚡', info: 'برای حفظ مواد معدنی بدن' },
-                    { name: 'روغن MCT', e: '🥥', info: 'چربی خالص، کمک به حالت کتوژنیک' }
-                ]
-            },
-            desserts: {
-                title: 'دسر و شیرینی‌جات',
-                emoji: '🍰',
-                items: [
-                    { name: 'شیرینی دانمارکی', e: '🥐', cal: 400, p: 5, f: 22, c: 45, fi: 2 },
-                    { name: 'کیک تولد', e: '🎂', cal: 400, p: 4, f: 20, c: 50, fi: 1 },
-                    { name: 'شیرینی رولت', e: '🍥', cal: 200, p: 3, f: 10, c: 25, fi: 1 },
-                    { name: 'بستنی سنتی', e: '🍨', cal: 220, p: 4, f: 12, c: 24, fi: 0 },
-                    { name: 'شکلات تلخ ۸۵٪', e: '🍫', cal: 600, p: 10, f: 50, c: 27, fi: 10 },
-                    { name: 'کیک یزدی', e: '🧁', cal: 360, p: 6, f: 16, c: 48, fi: 2 },
-                    { name: 'باقلوا', e: '🥮', cal: 425, p: 5, f: 25, c: 45, fi: 2 }
-                ]
-            },
-            drinks: {
-                title: 'نوشیدنی‌ها',
-                emoji: '🥤',
-                items: [
-                    { name: 'نوشابه گازدار', e: '🥤', cal: 40, p: 0, f: 0, c: 10, fi: 0 },
-                    { name: 'نوشابه زیرو', e: '🚫', cal: 0, p: 0, f: 0, c: 0, fi: 0 },
-                    { name: 'دوغ', e: '🥛', cal: 27, p: 1.5, f: 1.5, c: 2.5, fi: 0 },
-                    { name: 'آب پرتقال طبیعی', e: '🍊', cal: 45, p: 0.7, f: 0.2, c: 10, fi: 0.2 },
-                    { name: 'ماءالشعیر', e: '🍺', cal: 25, p: 0.3, f: 0, c: 6, fi: 0 }
-                ]
-            },
-            sauces: {
-                title: 'انواع سس',
-                emoji: '🥫',
-                items: [
-                    { name: 'سس کچاپ دلپذیر', e: '🍅', cal: 80, p: 1.7, f: 0.1, c: 18.3, fi: 0.5 },
-                    { name: 'سس فرانسوی دلپذیر', e: '🇫🇷', cal: 356, p: 0.8, f: 32, c: 16, fi: 0 },
-                    { name: 'سس هزار جزیره دلپذیر', e: '🏝️', cal: 402, p: 0.7, f: 39, c: 9.5, fi: 0 }
-                ]
-            }
-        }
     };
 
-    function getTargetRatios() {
-        const sliderValue = parseInt(macroSlider.value);
-        const p = 0.25 + (sliderValue / 100) * 0.10;
-        const f = 0.35 + (sliderValue / 100) * 0.20;
-        const c = 0.40 - (sliderValue / 100) * 0.30;
-        return { p, f, c };
-    }
+    let state = {};
 
-    function updateMacroRatioDisplay() {
-        const ratios = getTargetRatios();
-        let totalP = 0, totalF = 0, totalC = 0, totalFi = 0;
-        
-        document.querySelectorAll('.meal-card.selected, .fixed-item-card').forEach(card => {
-            const cardData = getCardData(card);
-            totalP += cardData.p; totalF += cardData.f; totalC += cardData.c; totalFi += cardData.fi;
-        });
-        
-        document.querySelectorAll('.gram-based-info-card .gram-input').forEach(input => {
-            const grams = parseFloat(input.value) || 0;
-            if (grams > 0) {
-                totalP += (parseFloat(input.dataset.p) / 100) * grams;
-                totalF += (parseFloat(input.dataset.f) / 100) * grams;
-                totalC += (parseFloat(input.dataset.c) / 100) * grams;
-                totalFi += (parseFloat(input.dataset.fi) / 100) * grams;
+    const model = {
+        initializeState() { state = { user: { weight: 93, weeklyLoss: 1.0 }, metrics: {}, meals: {} }; [...DB.fixedSnacks, ...DB.superSatiety, ...DB.breakfast, ...DB.dinner].forEach(mealTpl => { state.meals[mealTpl.id] = { id: mealTpl.id, type: mealTpl.id.split('_')[0], isSelected: false, isMealLocked: false, isOpen: mealTpl.id.startsWith('fs'), ingredients: mealTpl.ingredients.map(ingTpl => ({ id: ingTpl.id, isEnabled: !ingTpl.defaultOff, isLocked: false, grams: ingTpl.g })) }; }); },
+        updateAndCalculate() { const { weight, weeklyLoss } = state.user; const bmr = Math.round((10 * weight) + (6.25 * 175) - (5 * 28) + 5); const tdee = Math.round(bmr * 1.375); const dailyDeficit = Math.round(weeklyLoss * 7700 / 7); const targetCalories = tdee - dailyDeficit; state.metrics = { bmr, tdee, dailyDeficit, targetCalories, bmi: (weight / ((175 / 100) ** 2)).toFixed(1) }; this.rebalanceMeals(); },
+        rebalanceMeals() {
+            let fixedCals = 0, lockedSelectedCals = 0, lockedSelectedCount = 0;
+            Object.values(state.meals).forEach(meal => { const mealCals = this.getMealData(meal.id).totalCalories; if (meal.type === 'fs') fixedCals += mealCals; if (meal.isSelected && meal.isMealLocked) { lockedSelectedCals += mealCals; lockedSelectedCount++; } });
+            const remainingSlots = 2 - lockedSelectedCount; const availableCals = state.metrics.targetCalories - fixedCals - lockedSelectedCals; const targetCalPerMeal = (remainingSlots > 0 && availableCals > 0) ? availableCals / remainingSlots : 500;
+            Object.values(state.meals).forEach(meal => { if (meal.type === 'fs' || meal.isMealLocked) return; this.scaleMeal(meal.id, targetCalPerMeal); });
+        },
+        scaleMeal(mealId, targetCalories) { const mealTpl = this.getMealTemplate(mealId); const mealState = state.meals[mealId]; let originalTotalCal = 0; mealTpl.ingredients.forEach(ing => { if (!ing.defaultOff) originalTotalCal += ing.cal; }); if (originalTotalCal > 0) { const scaleFactor = targetCalories / originalTotalCal; mealState.ingredients.forEach((ingState, i) => { ingState.grams = mealTpl.ingredients[i].g * scaleFactor; }); } },
+        distributeCalorieChange(mealId, changedIngId, newGrams) {
+            const mealState = state.meals[mealId]; const mealTpl = this.getMealTemplate(mealId); const changedIngIndex = mealTpl.ingredients.findIndex(i => i.id === changedIngId); const changedIngTpl = mealTpl.ingredients[changedIngIndex]; const changedIngState = mealState.ingredients[changedIngIndex];
+            if (!changedIngTpl || changedIngTpl.g === 0) return;
+            const oldGrams = changedIngState.grams; const calPerGram = changedIngTpl.cal / changedIngTpl.g; const calorieDifference = (newGrams - oldGrams) * calPerGram;
+            changedIngState.grams = newGrams;
+            const adjustableIngs = []; let totalAdjustableCal = 0;
+            mealState.ingredients.forEach((ing, i) => { if (ing.id === changedIngId || !ing.isEnabled || ing.isLocked) return; const ingTpl = mealTpl.ingredients[i]; if (ingTpl.g === 0) return; const currentCal = (ingTpl.cal / ingTpl.g) * ing.grams; adjustableIngs.push({ state: ing, tpl: ingTpl, cal: currentCal }); totalAdjustableCal += currentCal; });
+            if (totalAdjustableCal > 0 && Math.abs(calorieDifference) > 0) { adjustableIngs.forEach(item => { const proportion = item.cal / totalAdjustableCal; const calAdjustment = calorieDifference * proportion; if (item.tpl.cal === 0 || item.tpl.g === 0) return; const gramAdjustment = calAdjustment / (item.tpl.cal / item.tpl.g); item.state.grams = Math.max(0, item.state.grams - gramAdjustment); }); }
+        },
+        getMealTemplate(mealId) { const type = mealId.split('_')[0]; const dbKeyMap = { fs: 'fixedSnacks', ss: 'superSatiety', m1: 'breakfast', m2: 'dinner' }; return DB[dbKeyMap[type]].find(m => m.id === mealId); },
+        getMealData(mealId) {
+            const mealState = state.meals[mealId]; const mealTpl = this.getMealTemplate(mealId); let totals = { totalCalories: 0, p: 0, f: 0, c: 0, fi: 0 };
+            mealState.ingredients.forEach((ingState, i) => { if (!ingState.isEnabled) return; const ingTpl = mealTpl.ingredients[i]; if (!ingTpl || ingTpl.g === 0) return; const gFactor = ingState.grams / ingTpl.g; totals.totalCalories += (ingTpl.cal || 0) * gFactor; totals.p += (ingTpl.p || 0) * gFactor; totals.f += (ingTpl.f || 0) * gFactor; totals.c += (ingTpl.c || 0) * gFactor; totals.fi += (ingTpl.fi || 0) * gFactor; });
+            return { ...totals, ...mealTpl, state: mealState };
+        },
+        getIngredientMacros(mealId, ingId) {
+            const mealState = state.meals[mealId]; const mealTpl = this.getMealTemplate(mealId); const ingState = mealState.ingredients.find(i => i.id === ingId); const ingTpl = mealTpl.ingredients.find(i => i.id === ingId);
+            if (!ingState || !ingState.isEnabled || !ingTpl || ingTpl.g === 0) return { p: 0, f: 0, c: 0, fi: 0 }; const gFactor = ingState.grams / ingTpl.g;
+            return { p: (ingTpl.p || 0) * gFactor, f: (ingTpl.f || 0) * gFactor, c: (ingTpl.c || 0) * gFactor, fi: (ingTpl.fi || 0) * gFactor };
+        },
+        getDailySummary() {
+            let totals = { p: 0, f: 0, c: 0, fi: 0, totalCalories: 0 }; const selectedMeals = [];
+            Object.values(state.meals).forEach(meal => { if(meal.isSelected || meal.type === 'fs') { const data = this.getMealData(meal.id); totals.p += data.p; totals.f += data.f; totals.c += data.c; totals.fi += data.fi; totals.totalCalories += data.totalCalories; selectedMeals.push(data); } });
+            const calFromP = totals.p * 4; const calFromF = totals.f * 9; const calFromC = totals.c * 4; const totalMacroCals = calFromP + calFromF + calFromC;
+            const percentages = totalMacroCals > 0 ? { p: (calFromP / totalMacroCals) * 100, f: (calFromF / totalMacroCals) * 100, c: (calFromC / totalMacroCals) * 100, } : { p: 0, f: 0, c: 0 };
+            return { totals, percentages, selectedMeals };
+        }
+    };
+    const view = {
+        render() { this.renderDashboard(); this.renderSummaryBar(); Object.keys(state.meals).forEach(mealId => this.renderMealCard(mealId)); this.renderDailySummary(); },
+        createInitialHTML() {
+            document.getElementById('app-container').innerHTML = `<section><h2 class="text-2xl font-bold mb-4 border-b-2 pb-2">🥤 وعده‌های ثابت</h2><div id="fs-container" class="space-y-4"></div></section><section class="mt-8"><h2 class="text-2xl font-bold mb-4 border-b-2 pb-2 text-amber-600 border-amber-400">⭐ وعده‌های فوق سیرکننده</h2><div id="ss-container" class="space-y-4"></div></section><div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8"><section><h2 class="text-2xl font-bold mb-4 border-b-2 pb-2">🌅 وعده اول</h2><div id="m1-container" class="space-y-4"></div></section><section><h2 class="text-2xl font-bold mb-4 border-b-2 pb-2">🍛 وعده دوم</h2><div id="m2-container" class="space-y-4"></div></section></div>`;
+            [...DB.fixedSnacks, ...DB.superSatiety, ...DB.breakfast, ...DB.dinner].forEach(mealTpl => { document.getElementById(`${mealTpl.id.split('_')[0]}-container`).innerHTML += this.getCardHTML(mealTpl); });
+        },
+        getCardHTML(mealTpl) {
+            const isFixed = mealTpl.id.startsWith('fs');
+            const ingredientHTML = mealTpl.ingredients.map(ing => `<li data-ingredient-id="${ing.id}" class="text-sm flex justify-between items-center py-2 border-b last:border-b-0"><div class="flex items-center"><span class="lock-icon ingredient-lock-icon mr-2">🔒</span><input type="checkbox" id="toggle-${ing.id}" class="toggle-checkbox hidden"><label for="toggle-${ing.id}" class="toggle-label relative w-10 h-5 rounded-full cursor-pointer mr-3"><span class="toggle-dot absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform"></span></label><span>${ing.e} ${ing.n}</span></div><div class="flex items-center"><span class="ingredient-macros"></span><input type="number" class="gram-input"><span>گرم</span></div></li>`).join('');
+            const header = isFixed ? `<h4 class="text-lg font-bold">${mealTpl.emoji} ${mealTpl.name}</h4>` : `<div class="summary-view cursor-pointer"><div class="flex justify-between items-start"><div class="flex-grow"><h4 class="text-lg font-bold flex items-center">${mealTpl.isKeto ? '<span class="keto-tag">کتو</span>':''}${mealTpl.emoji} ${mealTpl.name}</h4><p class="meal-macros text-sm text-gray-500"></p></div><div class="flex items-center gap-2"><input type="number" class="calorie-input text-blue-600"><span class="lock-icon meal-lock-icon">🔒</span></div></div><div class="toggle-details text-xs text-blue-500 mt-2 font-semibold">مشاهده جزئیات</div></div>`;
+            return `<div id="${mealTpl.id}" class="${isFixed ? 'fixed-item-card':'meal-card'} bg-white p-4 rounded-xl shadow-sm ${mealTpl.isKeto ? 'satiety-card': ''}">${header}<div class="ingredient-list mt-2 pt-2 border-t"><ul>${ingredientHTML}</ul></div></div>`;
+        },
+        renderDashboard() { const { bmi, bmr, tdee, dailyDeficit, targetCalories } = state.metrics; document.getElementById('live-dashboard').innerHTML = `<div class="bg-white p-4 rounded-xl shadow-sm"><p class="font-semibold text-gray-500 text-sm">BMI</p><p class="text-2xl font-bold text-blue-600">${bmi || 'N/A'}</p></div><div class="bg-white p-4 rounded-xl shadow-sm"><p class="font-semibold text-gray-500 text-sm">BMR</p><p class="text-2xl font-bold text-blue-600">${bmr || 0} kcal</p></div><div class="bg-white p-4 rounded-xl shadow-sm"><p class="font-semibold text-gray-500 text-sm">TDEE</p><p class="text-2xl font-bold text-blue-600">${tdee || 0} kcal</p></div><div class="bg-white p-4 rounded-xl shadow-sm"><p class="font-semibold text-gray-500 text-sm">کسری کالری</p><p class="text-2xl font-bold text-red-500">-${dailyDeficit || 0} kcal</p></div><div class="bg-white p-4 rounded-xl shadow-sm border-2 border-green-500"><p class="font-semibold text-gray-500 text-sm">کالری هدف</p><p class="text-3xl font-bold text-green-600">~${targetCalories || 0} kcal</p></div>`; },
+        renderSummaryBar() {
+            const { totals } = model.getDailySummary(); const target = state.metrics.targetCalories || 0; const percent = target > 0 ? Math.min(100, (totals.totalCalories / target) * 100) : 0;
+            let barClass = 'bg-yellow-300'; if (totals.totalCalories > target + 50) barClass = 'bg-red-500'; else if (totals.totalCalories >= target - 50) barClass = 'bg-green-500';
+            document.getElementById('summary-bar').innerHTML = `<div class="flex items-center justify-between flex-wrap gap-4"><h2 class="text-xl font-bold">خلاصه روزانه</h2><div class="flex items-center gap-4 text-lg"><span>کالری کل:</span><span class="font-bold text-2xl bg-white text-blue-700 px-3 py-1 rounded-md">${Math.round(totals.totalCalories)}</span><span>/ ${target}</span></div><button id="printBtn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">ذخیره PDF</button></div><div class="w-full bg-blue-400 rounded-full h-2.5 mt-2"><div class="${barClass} h-2.5 rounded-full" style="width: ${percent}%"></div></div>`;
+        },
+        renderMealCard(mealId) {
+            const el = document.getElementById(mealId); const data = model.getMealData(mealId);
+            el.classList.toggle('selected', data.state.isSelected); el.classList.toggle('open', data.state.isOpen);
+            if (!data.id.startsWith('fs')) {
+                el.querySelector('.meal-lock-icon').classList.toggle('locked', data.state.isMealLocked); el.querySelector('.calorie-input').value = Math.round(data.totalCalories);
+                el.querySelector('.meal-macros').innerHTML = `P: ${data.p.toFixed(1)} | F: ${data.f.toFixed(1)} | C: ${data.c.toFixed(1)} | Fi: ${data.fi.toFixed(1)}`;
             }
-        });
-
-        const calP = totalP * 4; const calF = totalF * 9; const calC = totalC * 4;
-        const totalMacroCal = calP + calF + calC;
-        const pPercent = totalMacroCal > 0 ? (calP / totalMacroCal) * 100 : 0;
-        const fPercent = totalMacroCal > 0 ? (calF / totalMacroCal) * 100 : 0;
-        const cPercent = totalMacroCal > 0 ? (calC / totalMacroCal) * 100 : 0;
-
-        macroRatioDisplay.innerHTML = `
-            <div class="text-sm">پروفایل هدف: 
-                <span class="text-blue-600">P:${Math.round(ratios.p*100)}%</span> | 
-                <span class="text-amber-600">F:${Math.round(ratios.f*100)}%</span> | 
-                <span class="text-green-600">C:${Math.round(ratios.c*100)}%</span>
-            </div>
-            <div class="font-normal mt-1">وعده‌های انتخابی: 
-                <span class="text-blue-600">P:${pPercent.toFixed(0)}%</span> | 
-                <span class="text-amber-600">F:${fPercent.toFixed(0)}%</span> | 
-                <span class="text-green-600">C:${cPercent.toFixed(0)}%</span> |
-                <span class="text-purple-600">Fi:${totalFi.toFixed(1)}g</span>
-            </div>
-        `;
-    }
-    
-    function adjustMealToProfile(originalMeal, totalTargetCalories, targetRatios) {
-        let ingredients = JSON.parse(JSON.stringify(originalMeal.ingredients));
-
-        let currentCals = { p: 0, f: 0, c: 0, total: 0 };
-        ingredients.forEach(ing => {
-            const gFactor = originalMeal.ingredients.find(oi => oi.n === ing.n).g > 0 ? ing.g / originalMeal.ingredients.find(oi => oi.n === ing.n).g : 0;
-            currentCals.p += (originalMeal.ingredients.find(oi => oi.n === ing.n).p * 4) * gFactor;
-            currentCals.f += (originalMeal.ingredients.find(oi => oi.n === ing.n).f * 9) * gFactor;
-            currentCals.c += (originalMeal.ingredients.find(oi => oi.n === ing.n).c * 4) * gFactor;
-        });
-        currentCals.total = currentCals.p + currentCals.f + currentCals.c;
-        
-        const finalFactor = totalTargetCalories / currentCals.total;
-        if (currentCals.total > 0 && isFinite(finalFactor)) {
-            ingredients.forEach(ing => { ing.g *= finalFactor; });
-        }
-        
-        return { ...originalMeal, ingredients: ingredients };
-    }
-
-    function calculateAllStats() {
-        const weight = parseFloat(weightInput.value) || 0;
-        const weeklyLoss = parseFloat(lossInput.value) || 0;
-        const bmr = Math.round((10 * weight) + (6.25 * HEIGHT_CM) - (5 * AGE) + 5);
-        const tdee = Math.round(bmr * ACTIVITY_MULTIPLIER);
-        const bmi = (weight / ((HEIGHT_CM / 100) ** 2)).toFixed(1);
-        const dailyDeficit = Math.round(weeklyLoss * 7700 / 7);
-        const targetCalories = tdee - dailyDeficit;
-
-        displayBMI.textContent = bmi;
-        displayBMR.textContent = `${bmr} kcal`;
-        displayTDEE.textContent = `${tdee} kcal`;
-        displayDeficit.textContent = `-${dailyDeficit} kcal`;
-        displayTargetCalories.textContent = `~${targetCalories} kcal`;
-        targetCaloriesDisplay.textContent = `/ ${targetCalories}`;
-
-        const fixedSnacksCals = calculateFixedSnacksTotal(true);
-        const caloriesForMeals = targetCalories - fixedSnacksCals;
-        const targetCaloriesPerMeal = caloriesForMeals > 0 ? caloriesForMeals / 2 : 500; 
-        const targetRatios = getTargetRatios();
-
-        const processMealList = (list) => list.map(meal => {
-            const adjustedMeal = adjustMealToProfile(meal, targetCaloriesPerMeal, targetRatios);
-            adjustedMeal.ingredients.forEach((ing, i) => {
-                const originalIng = meal.ingredients[i];
-                ing.p_per_g = originalIng.g > 0 ? originalIng.p / originalIng.g : 0;
-                ing.f_per_g = originalIng.g > 0 ? originalIng.f / originalIng.g : 0;
-                ing.c_per_g = originalIng.g > 0 ? originalIng.c / originalIng.g : 0;
-                ing.fi_per_g = originalIng.g > 0 ? originalIng.fi / originalIng.g : 0;
-                ing.cal_per_g = originalIng.g > 0 ? originalIng.cal / originalIng.g : 0;
+            data.state.ingredients.forEach(ingState => {
+                const ingEl = el.querySelector(`[data-ingredient-id="${ingState.id}"]`);
+                ingEl.querySelector('.ingredient-lock-icon').classList.toggle('locked', ingState.isLocked);
+                ingEl.querySelector('.toggle-checkbox').checked = ingState.isEnabled;
+                ingEl.querySelector('.gram-input').value = Math.round(ingState.grams);
+                const macros = model.getIngredientMacros(mealId, ingState.id);
+                ingEl.querySelector('.ingredient-macros').innerHTML = `P:${macros.p.toFixed(1)} F:${macros.f.toFixed(1)} C:${macros.c.toFixed(1)} Fi:${macros.fi.toFixed(1)}`;
             });
-            return adjustedMeal;
-        });
-        
-        MEAL_DATA.superSatiety = processMealList(ORIGINAL_MEALS_DB.superSatiety);
-        MEAL_DATA.meal1 = processMealList(ORIGINAL_MEALS_DB.breakfast);
-        MEAL_DATA.meal2 = processMealList(ORIGINAL_MEALS_DB.dinner);
-        
-        renderAllMeals();
-        updateSummary();
-    }
-
-    function createCard(item, type, index, container) {
-        const card = document.createElement('div');
-        card.className = (type === 'fixed') ? 'fixed-item-card bg-white p-4 rounded-xl shadow-sm' : 'meal-card bg-white p-4 rounded-xl shadow-sm cursor-pointer';
-        if (type === 'superSatiety') card.classList.add('satiety-card');
-        card.dataset.type = type;
-        card.dataset.index = index;
-
-        const ingredientHTML = item.ingredients.map((ing, ingIndex) => {
-            const isChecked = ing.defaultOff ? '' : 'checked';
-            return `<li class="text-sm text-gray-600 flex justify-between items-center border-b last:border-b-0 py-1">
-                <div class="flex items-center">
-                    <input type="checkbox" class="toggle-checkbox hidden" id="toggle_${type}_${index}_${ingIndex}" ${isChecked} onchange="recalculateCardMacros(this.closest('[data-type]'))">
-                    <label for="toggle_${type}_${index}_${ingIndex}" class="toggle-label relative w-10 h-5 rounded-full cursor-pointer mr-3">
-                        <span class="toggle-dot absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform"></span>
-                    </label>
-                    <span class="whitespace-nowrap">${ing.e} ${ing.n}</span>
-                </div>
-                <div class="flex items-center">
-                    <input type="number" value="${Math.round(ing.g)}" class="gram-input" data-ing-index="${ingIndex}" oninput="recalculateCardMacros(this.closest('[data-type]'))">
-                    <span>گرم</span>
-                </div>
-                <span class="macro-details text-xs text-gray-500 text-right w-32"></span>
-            </li>`;
-        }).join('');
-        
-        let cardHeader = '';
-        if (type !== 'fixed') {
-             const ketoTag = item.isKeto ? '<span class="keto-tag">کتو</span>' : '';
-             cardHeader = `<div class="summary-view cursor-pointer">
-                    <div class="flex justify-between items-start">
-                        <div class="flex-grow"><h4 class="text-lg font-bold text-gray-900 flex items-center">${ketoTag}${item.emoji} ${item.name}</h4><p class="meal-macros text-sm text-gray-500"></p></div>
-                        <span class="meal-calories text-blue-600 font-semibold text-lg whitespace-nowrap ml-2"></span>
-                    </div>
-                    <div class="toggle-details text-center text-xs text-blue-500 mt-2 font-semibold">برای مشاهده و ویرایش جزئیات کلیک کنید</div>
-                </div>`;
-        } else {
-             cardHeader = `<h4 class="text-lg font-bold text-gray-900 flex items-center">${item.emoji} ${item.name}</h4>`;
-        }
-
-        card.innerHTML = cardHeader + `<div class="ingredient-list mt-2 pt-2 border-t border-gray-200"><ul>${ingredientHTML}</ul></div>`;
-        
-        if (type !== 'fixed') {
-            card.querySelector('.summary-view').addEventListener('click', (e) => {
-                 if (e.target.tagName.toLowerCase() !== 'input' && e.target.tagName.toLowerCase() !== 'label') handleMealSelection(card);
-            });
-        } else {
-            card.classList.add('open');
-        }
-        
-        recalculateCardMacros(card);
-        container.appendChild(card);
-    }
+        },
+        renderDailySummary() {
+            const { totals, percentages, selectedMeals } = model.getDailySummary();
+            const selectedMealsHTML = selectedMeals.length > 0 ? selectedMeals.map(m => `<li>${m.emoji} ${m.name}: <span class="font-semibold">${Math.round(m.totalCalories)} kcal</span></li>`).join('') : '<li>هیچ وعده‌ای انتخاب نشده است.</li>';
+            document.getElementById('daily-summary-section').innerHTML = `<div class="bg-white p-6 rounded-xl shadow-md"><h2 class="text-2xl font-bold mb-4">خلاصه مواد مغذی روزانه</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="space-y-2"><div><h3 class="font-semibold">وعده‌های انتخابی:</h3><ul class="list-disc list-inside text-gray-700">${selectedMealsHTML}</ul></div><div><h3 class="font-semibold mt-4">مجموع کل:</h3><p>پروتئین: ${totals.p.toFixed(1)}g | چربی: ${totals.f.toFixed(1)}g | کربوهیدرات: ${totals.c.toFixed(1)}g | فیبر: ${totals.fi.toFixed(1)}g</p></div></div><div><h3 class="font-semibold mb-2">درصد کالری از ماکرونوترینت‌ها:</h3><div class="space-y-3"><div class="w-full"><div class="flex justify-between mb-1"><span class="text-base font-medium text-blue-700">پروتئین</span><span class="text-sm font-medium text-blue-700">${percentages.p.toFixed(1)}%</span></div><div class="w-full bg-gray-200 rounded-full h-2.5"><div class="bg-blue-600 h-2.5 rounded-full" style="width: ${percentages.p}%"></div></div></div><div class="w-full"><div class="flex justify-between mb-1"><span class="text-base font-medium text-red-700">چربی</span><span class="text-sm font-medium text-red-700">${percentages.f.toFixed(1)}%</span></div><div class="w-full bg-gray-200 rounded-full h-2.5"><div class="bg-red-600 h-2.5 rounded-full" style="width: ${percentages.f}%"></div></div></div><div class="w-full"><div class="flex justify-between mb-1"><span class="text-base font-medium text-green-700">کربوهیدرات</span><span class="text-sm font-medium text-green-700">${percentages.c.toFixed(1)}%</span></div><div class="w-full bg-gray-200 rounded-full h-2.5"><div class="bg-green-600 h-2.5 rounded-full" style="width: ${percentages.c}%"></div></div></div></div></div></div></div>`;
+        },
+    };
     
-    function createInfoCard(cardData, container){
-        const card = document.createElement('div');
-        card.className = 'info-card bg-white p-4 rounded-xl shadow-sm cursor-pointer';
-        const itemsHTML = cardData.items.map(item => `<li class="text-sm text-gray-700 flex items-start py-1"><span class="mr-2">${item.e}</span><div><span class="font-semibold">${item.name}:</span> <span class="text-gray-600">${item.info}</span></div></li>`).join('');
-        card.innerHTML = `<div class="summary-view"><h4 class="text-lg font-bold text-gray-900 flex items-center">${cardData.emoji} ${cardData.title}</h4></div><div class="ingredient-list mt-2 pt-2 border-t border-gray-200"><ul class="space-y-1">${itemsHTML}</ul></div>`;
-        card.addEventListener('click', () => card.classList.toggle('open'));
-        container.appendChild(card);
-    }
-    
-    function createGramBasedInfoCard(cardData, container) {
-        const categoryCard = document.createElement('div');
-        categoryCard.className = 'gram-based-info-card bg-white p-4 rounded-xl shadow-sm';
-        
-        let itemsHTML = cardData.items.map((item) => `
-            <div class="p-2 rounded-lg border-b last:border-b-0">
-                <div class="flex justify-between items-center text-sm">
-                    <span class="font-semibold">${item.e} ${item.name}</span>
-                    <div class="flex items-center">
-                        <input type="number" value="0" class="gram-input" 
-                            data-cal="${item.cal}" data-p="${item.p}" data-f="${item.f}" data-c="${item.c}" data-fi="${item.fi || 0}"
-                            oninput="updateSummary()">
-                        <span>گرم</span>
-                    </div>
-                </div>
-                <div class="text-xs text-gray-500 text-left mt-1">در ۱۰۰ گرم: ${item.cal} kcal | P:${item.p} F:${item.f} C:${item.c}</div>
-            </div>
-        `).join('');
-
-        categoryCard.innerHTML = `<h4 class="text-lg font-bold text-gray-900 flex items-center">${cardData.emoji} ${cardData.title}</h4><div class="mt-2 pt-2 border-t border-gray-200 space-y-2">${itemsHTML}</div>`;
-        container.appendChild(categoryCard);
-    }
-
-    window.recalculateCardMacros = (card) => {
-        const type = card.dataset.type;
-        const index = card.dataset.index;
-        let mealTemplate;
-        if (type === 'fixed') mealTemplate = ORIGINAL_MEALS_DB.fixedSnacks[index];
-        else if (type === 'superSatiety') mealTemplate = ORIGINAL_MEALS_DB.superSatiety[index];
-        else if (type === 'meal1') mealTemplate = ORIGINAL_MEALS_DB.breakfast[index];
-        else if (type === 'meal2') mealTemplate = ORIGINAL_MEALS_DB.dinner[index];
-        if (!mealTemplate) return;
-        
-        let total = { cal: 0, p: 0, f: 0, c: 0, fi: 0 };
-        card.querySelectorAll('li').forEach((li, ingIndex) => {
-            const toggle = li.querySelector('.toggle-checkbox');
-            const macroDetailEl = li.querySelector('.macro-details');
-            if (!toggle.checked) {
-                if(macroDetailEl) macroDetailEl.innerHTML = '';
-                return;
-            };
-
-            const input = li.querySelector('.gram-input');
-            const newGrams = parseFloat(input.value) || 0;
-            const originalIng = mealTemplate.ingredients[ingIndex];
-            const gFactor = originalIng.g > 0 ? newGrams / originalIng.g : 0;
-            const cal = originalIng.cal * gFactor, p = originalIng.p * gFactor, f = originalIng.f * gFactor, c = originalIng.c * gFactor, fi = originalIng.fi * gFactor;
-            total.cal += cal; total.p += p; total.f += f; total.c += c; total.fi += fi;
-            if(macroDetailEl) macroDetailEl.innerHTML = `Kcal:${cal.toFixed(0)} P:${p.toFixed(1)} F:${f.toFixed(1)} C:${c.toFixed(1)} Fi:${fi.toFixed(1)}`;
-        });
-
-        if (type !== 'fixed') {
-            card.querySelector('.meal-calories').textContent = `~${Math.round(total.cal)} کالری`;
-            card.querySelector('.meal-macros').innerHTML = `P: ${total.p.toFixed(1)} | F: ${total.f.toFixed(1)} | C: ${total.c.toFixed(1)} | Fi: ${total.fi.toFixed(1)}`;
-        }
-        card.dataset.calories = total.cal;
-        updateSummary();
-    }
-    
-    function handleMealSelection(card) {
-        card.classList.toggle('selected');
-        card.classList.toggle('open');
-        updateSummary();
-    }
-
-    function calculateFixedSnacksTotal(useOriginal=false) {
-        let total = 0;
-        if (useOriginal) {
-            ORIGINAL_MEALS_DB.fixedSnacks.forEach(snack => { snack.ingredients.forEach(ing => total += ing.cal); });
-        } else {
-            document.querySelectorAll('.fixed-item-card').forEach(card => { total += parseFloat(card.dataset.calories) || 0; });
-        }
-        return total;
-    }
-
-    function getCardData(card) {
-        let total = { cal: 0, p: 0, f: 0, c: 0, fi: 0 };
-        const type = card.dataset.type, index = card.dataset.index;
-        let mealTemplate;
-        if (type === 'fixed') mealTemplate = ORIGINAL_MEALS_DB.fixedSnacks[index];
-        else if (type === 'superSatiety') mealTemplate = ORIGINAL_MEALS_DB.superSatiety[index];
-        else if (type === 'meal1') mealTemplate = ORIGINAL_MEALS_DB.breakfast[index];
-        else if (type === 'meal2') mealTemplate = ORIGINAL_MEALS_DB.dinner[index];
-        if (!mealTemplate) return total;
-
-        card.querySelectorAll('li').forEach((li, ingIndex) => {
-            if (!li.querySelector('.toggle-checkbox').checked) return;
-            const newGrams = parseFloat(li.querySelector('.gram-input').value) || 0;
-            const originalIng = mealTemplate.ingredients[ingIndex];
-            const gFactor = originalIng.g > 0 ? newGrams / originalIng.g : 0;
-            total.cal += originalIng.cal * gFactor; total.p += originalIng.p * gFactor; total.f += originalIng.f * gFactor; total.c += originalIng.c * gFactor; total.fi += originalIng.fi * gFactor;
-        });
-        return total;
-    }
-
-    function updateSummary() {
-        let totalCalories = 0;
-        document.querySelectorAll('.fixed-item-card').forEach(card => { totalCalories += parseFloat(card.dataset.calories) || 0; });
-        document.querySelectorAll('.meal-card.selected').forEach(card => { totalCalories += parseFloat(card.dataset.calories) || 0; });
-        
-        document.querySelectorAll('.gram-based-info-card .gram-input').forEach(input => {
-            const grams = parseFloat(input.value) || 0;
-            if (grams > 0) {
-                totalCalories += (parseFloat(input.dataset.cal) / 100) * grams;
+    const controller = {
+        init() {
+            model.initializeState(); view.createInitialHTML();
+            document.getElementById('currentWeight').addEventListener('input', this.handleUserInputChange);
+            document.getElementById('targetWeeklyLoss').addEventListener('input', this.handleUserInputChange);
+            document.getElementById('app-container').addEventListener('click', this.handleCardClick.bind(this));
+            document.getElementById('app-container').addEventListener('input', this.handleCardInput.bind(this));
+            document.getElementById('summary-bar').addEventListener('click', e => { if (e.target.id === 'printBtn') window.print(); });
+            model.updateAndCalculate(); view.render();
+        },
+        handleUserInputChange() { state.user.weight = parseFloat(document.getElementById('currentWeight').value) || 0; state.user.weeklyLoss = parseFloat(document.getElementById('targetWeeklyLoss').value) || 0; model.updateAndCalculate(); view.render(); },
+        handleCardClick(e) {
+            const mealEl = e.target.closest('.meal-card, .fixed-item-card'); if (!mealEl) return;
+            const mealId = mealEl.id; const mealState = state.meals[mealId];
+            if (e.target.closest('.summary-view') && !e.target.closest('.lock-icon, input')) {
+                e.stopPropagation(); if (mealState.type !== 'fs') { if(!mealState.isSelected) Object.values(state.meals).forEach(m => { if(m.type === mealState.type) m.isSelected = false; }); mealState.isSelected = !mealState.isSelected; }
+                mealState.isOpen = !mealState.isOpen;
+            } else if (e.target.closest('.meal-lock-icon')) { e.stopPropagation(); mealState.isMealLocked = !mealState.isMealLocked;
+            } else if (e.target.closest('.ingredient-lock-icon')) { e.stopPropagation(); mealState.ingredients.find(i=>i.id === e.target.closest('li').dataset.ingredientId).isLocked = !mealState.ingredients.find(i=>i.id === e.target.closest('li').dataset.ingredientId).isLocked;
             }
-        });
-        
-        totalCaloriesEl.textContent = Math.round(totalCalories);
-        
-        const targetCalories = parseInt(displayTargetCalories.textContent.replace('~', '').replace(' kcal', '')) || 1500;
-        let percentage = (totalCalories / targetCalories) * 100;
-        if (percentage > 100) percentage = 100;
-        
-        progressBarEl.style.width = `${percentage}%`;
-        
-        if (totalCalories > targetCalories + 50) { progressBarEl.className = 'bg-red-500 h-2.5 rounded-full'; } 
-        else if (totalCalories >= targetCalories - 50) { progressBarEl.className = 'bg-green-500 h-2.5 rounded-full'; } 
-        else { progressBarEl.className = 'bg-yellow-300 h-2.5 rounded-full'; }
-        
-        updateMacroRatioDisplay();
-    }
-
-    function renderAllMeals() {
-        fixedSnacksContainer.innerHTML = '';
-        superSatietyContainer.innerHTML = '';
-        meal1Container.innerHTML = '';
-        meal2Container.innerHTML = '';
-        ORIGINAL_MEALS_DB.fixedSnacks.forEach((item, index) => createCard(item, 'fixed', index, fixedSnacksContainer));
-        MEAL_DATA.superSatiety.forEach((meal, index) => createCard(meal, 'superSatiety', index, superSatietyContainer));
-        MEAL_DATA.meal1.forEach((meal, index) => createCard(meal, 'meal1', index, meal1Container));
-        MEAL_DATA.meal2.forEach((meal, index) => createCard(meal, 'meal2', index, meal2Container));
-        
-        fastingCardContainer.innerHTML = '';
-        dessertCardContainer.innerHTML = '';
-        drinksCardContainer.innerHTML = '';
-        saucesCardContainer.innerHTML = '';
-        
-        createInfoCard(ORIGINAL_MEALS_DB.infoCards.fasting, fastingCardContainer);
-        createGramBasedInfoCard(ORIGINAL_MEALS_DB.infoCards.desserts, dessertCardContainer);
-        createGramBasedInfoCard(ORIGINAL_MEALS_DB.infoCards.drinks, drinksCardContainer);
-        createGramBasedInfoCard(ORIGINAL_MEALS_DB.infoCards.sauces, saucesCardContainer);
-    }
-
-    weightInput.addEventListener('input', calculateAllStats);
-    lossInput.addEventListener('input', calculateAllStats);
-    macroSlider.addEventListener('input', calculateAllStats);
-    printBtn.addEventListener('click', () => window.print());
-
-    calculateAllStats();
+            model.updateAndCalculate(); view.render();
+        },
+        handleCardInput(e) {
+            const mealEl = e.target.closest('.meal-card, .fixed-item-card'); if (!mealEl) return;
+            const mealId = mealEl.id; const mealState = state.meals[mealId];
+            if (e.target.matches('.gram-input')) {
+                const ingId = e.target.closest('li').dataset.ingredientId; const newGrams = parseFloat(e.target.value) || 0;
+                if(mealState.isMealLocked) { model.distributeCalorieChange(mealId, ingId, newGrams); } else { mealState.ingredients.find(i => i.id === ingId).grams = newGrams; }
+            } else if (e.target.matches('.calorie-input')) { model.scaleMeal(mealId, parseFloat(e.target.value) || 0);
+            } else if (e.target.matches('.toggle-checkbox')) { mealState.ingredients.find(i => i.id === e.target.closest('li').dataset.ingredientId).isEnabled = e.target.checked; }
+            model.updateAndCalculate(); view.render();
+        }
+    };
+    
+    controller.init();
+})();
 </script>
+
 </body>
 </html>
